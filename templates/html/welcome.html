@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mbappé Cabrón</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', _external=True) }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Hola! ¿Qué deseas consultar?</h1>
+        <div class="buttons">
+            <button onclick="redirigir('/joints')">Joints</button>
+            <button onclick="redirigir('/components')">Componentes</button>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js', _external=True) }}"></script>
+</body>
+</html>
+

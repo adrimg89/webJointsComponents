@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Execution Units of {{ component_code }}</title>
+    <link rel="stylesheet" href="/templates/css/eus.css">
+</head>
+<body>
+    <h1>Execution Unit que forman el componente {{ component_code }}</h1>
+    <table>
+        <tr>
+            <th>Execution_Unit</th>
+            <th>Description</th>
+            <th>Thickness (m)</th>
+        </tr>
+        {% for eus in listaeus %}
+        <tr>
+            <td><a href="/lg/{{ eus[0] }}" class="button">{{ eus[0] }}</a></td>
+            <td>{{ eus[1] }}</td>
+            <td>{{ eus[2] }}</td>
+            {% endfor %}
+        </tr>
+</body>
+</html>
+
+
+
+
+

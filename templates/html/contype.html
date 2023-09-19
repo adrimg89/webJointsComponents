@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connection Type {{ cgt }}</title>
+    <link rel="stylesheet" type="text/css" href="/templates/css/contype.css">
+</head>
+<body>
+    <h1>Connection Type para la ConnectionGroupType {{ cgt }}</h1>
+    <h1>{{ CGT_description[0] }}</h1>
+    <table>
+        <tr>
+            <th>connection_type_id</th>
+            <th>description</th>
+            <th>formula</th>
+            <th>performance</th>
+        </tr>
+        {% for record in records_list %}
+        <tr>
+            <td>{{ record.connection_type_id }}</td>
+            <td>{{ record.description[0] }}</td>
+            <td>{{ record.formula }}</td>
+            <td>{{ record.performance }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

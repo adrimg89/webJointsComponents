@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Components</title>
+    <link rel="stylesheet" href="/templates/css/components.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="templates/js/components.js"></script>
+</head>
+<body>
+    <h1>Listado de Componentes</h1>
+    <table>
+        <tr>
+            <th>Component
+                <select class="filter-select" data-column-index="0" id="filter-Component"></select>
+            </th>
+            <th>Status
+                <select class="filter-select" data-column-index="1" id="filter-Status"></select>
+            </th>
+        </tr>
+      
+        <tbody>
+            {% for component in listacomponentes %}
+                <tr>
+                    <td><a href="/eus/{{ component[0] }}" class="button">{{ component[0] }}</a></td>
+                    <td>{{ component[1] }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

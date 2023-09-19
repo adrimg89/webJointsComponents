@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Layer Groups</title>
+    <link rel="stylesheet" href="/templates/css/lgs.css">
+</head>
+<body>
+    <h1>Layer groups que forman la Execution Unit {{ eu_code }}</h1>
+    <table>
+        <tr>
+            <th>Layer_Group</th>
+            <th>Description</th>
+            
+        </tr>
+        {% for lgs in listalgs %}
+        <tr>
+            
+            <td>{{ lgs[0] }}</td>
+            <td>{{ lgs[1] }}</td>
+            {% endfor %}
+        </tr>
+    
+</body>
+</html>
+
+
+
+
+

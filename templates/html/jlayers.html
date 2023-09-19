@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Joints layers {{ joint }}</title>
+    <link rel="stylesheet" href="/templates/css/jlayers.css">
+</head>
+<body>
+    <h1>Joint layers para la joint {{ joint }}</h1>
+    <table>
+        <tr>
+            <th>material_id</th>
+            <th>Long_Name</th>
+            <th>formula</th>
+            <th>performance</th>
+        </tr>
+        {% for record in records_list %}
+        <tr>
+            <td>{{ record.material_id }}</td>
+            <td>{{ record.Long_Name[0] }}</td>
+            <td>{{ record.formula }}</td>
+            <td>{{ record.performance }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

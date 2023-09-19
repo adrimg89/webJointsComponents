@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Joint Type</title>
+    <link rel="stylesheet" href="templates/css/joints.css"> <!-- Ruta relativa al archivo style.css -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="templates/js/joints.js"></script> <!-- Ruta relativa al archivo main.js -->
+</head>
+<body>
+    <h1>Listado de JointType</h1>
+    <table>
+        <tr>
+            <th>JointType_id
+                <select class="filter-select" data-column-index="0" id="filter-jointType"></select>
+            </th>
+            <th>Joint_type
+                <select class="filter-select" data-column-index="1" id="filter-jointType_type"></select>
+            </th>
+            <th>ConnectionGroup_type
+                <select class="filter-select" data-column-index="2" id="filter-connectionGroupType"></select>
+            </th>
+            <th>Composition
+                <input type="text" class="filter-input" data-column-index="3" id="filter-composition" placeholder="Filtrar">
+            </th>
+            <th>Project
+                <select class="filter-select" data-column-index="4" id="filter-project"></select>
+            </th>
+        </tr>
+        <!-- Aquí van tus registros en bucle -->
+        {% for record in records_list %}
+        <tr>
+            <td><a href="/jlayers/{{ record.joint_type_id }}" class="button">{{ record.joint_type_id }}</a></td>
+            <td>{{ record.joints3_type }}</td>
+            <td class="connection-group-cell">{{ record.api_ConnectionGroup_type }}</td>
+            <!--<td>{{ record.api_ConnectionGroup_type }}</td> <!-- Nuevo valor -->
+            <td>{{ record.Components_api }}</td>
+            <td>{{ record.project_export }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

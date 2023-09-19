@@ -26,4 +26,29 @@
         {% endfor %}
     </table>
 </body>
+
+<body>
+    <h2>Connection Layers asociadas a las ConnectionType</h2>
+    
+    <table>
+        <tr>
+            <th>connectiontype_id</th>
+            <th>material</th>
+            <th>description</th>
+            <th>performance</th>
+            <th>formula</th>
+            <th>fase</th>
+        </tr>
+        {% for record in layers_list %}
+        <tr>
+            <td>{{ record.connectiontype_id }}</td>
+            <td>{{ record.material }}</td>
+            <td>{{ record.description[0] }}</td>
+            <td>{{ record.performance }}</td>
+            <td>{{ record.formula }}</td>
+            <td>{{ record.fase }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
 </html>

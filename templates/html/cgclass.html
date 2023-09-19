@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Connectiongroup Class</title>
+    <link rel="stylesheet" href="/templates/css/cgclass.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="templates/js/components.js"></script>
+</head>
+<body>
+    <h1>ConnectionGroup Class</h1>
+    <table>
+        <tr>
+            <th>ConnectionGroup Class</th>
+            <th>Description</th>
+            <th>Box type</th>
+            <th>Planilla</th>
+        </tr> 
+      
+        <tbody>
+            {% for record in cgclass_list %}
+                <tr>
+                    <td><a href="/cgclass/{{ record.connectiongroup_class }}" class="button">{{ record.connectiongroup_class }}</a></td>
+                    <td>{{ record.Description_CGClass }}</td>
+                    <td>{{ record.box_type[0] }}</td>
+                    <td><a href="{{ record.planilla }}" class="button">{{ "Planilla PDF" }}</a></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

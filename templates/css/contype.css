@@ -12,6 +12,18 @@ h1 {
     margin-top: 20px;
 }
 
+h2 {
+    color: #fff;
+    font-size: 28px;
+    margin-top: 180px;
+}
+
+h3 {
+    color: #fff;
+    font-size: 14px;
+    margin-top: 14px;
+}
+
 table {
     width: 96%;
     border-collapse: collapse;

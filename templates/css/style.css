@@ -45,3 +45,47 @@ button:hover {
     background-color: #497767;
     color: #fff;
 }
+
+form {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    margin-top: 20px;
+    text-align: left;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+form label {
+    font-size: 18px;
+    color: #497767;
+}
+
+form input[type="text"],
+form input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    border: 1px solid #497767;
+    border-radius: 5px;
+    font-size: 16px;
+    box-sizing: border-box; /* Agregamos esta propiedad */
+}
+
+form input[type="submit"] {
+    font-size: 18px;
+    background-color: #497767;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    margin-top: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+form input[type="submit"]:hover {
+    background-color: #fff;
+    color: #497767;
+}

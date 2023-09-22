@@ -32,13 +32,25 @@
         {% for record in records_list %}
         <tr>
             <td><a href="/jlayers/{{ record.joint_type_id }}" class="button">{{ record.joint_type_id }}</a></td>
-            <td>{{ record.joints3_type }}</td>
-            <td class="connection-group-cell">{{ record.api_ConnectionGroup_type }}</td>
-            <!--<td>{{ record.api_ConnectionGroup_type }}</td> <!-- Nuevo valor -->
-            <td>{{ record.Components_api }}</td>
+            <td>{% if record.joints3_type != None %}
+                  {{ record.joints3_type }}
+                {% endif %}
+              </td>            
+            <td class="connection-group-cell">
+                {% if record.api_ConnectionGroup_type != None %}
+                  {{ record.api_ConnectionGroup_type }}
+                {% endif %}
+              </td> 
+            <td>{% if record.Components_api != None %}
+                {{ record.Components_api }}
+              {% endif %}
+            </td>                       
             <td>{{ record.project_export }}</td>
         </tr>
         {% endfor %}
     </table>
+    <div style="position: absolute; top: 10px; right: 10px;">
+        <a href="{{ url_for('logout') }}" class="button">Logout</a>
+    </div>
 </body>
 </html>

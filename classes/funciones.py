@@ -2,6 +2,7 @@ import requests
 import mysql.connector
 from passwords import *
 
+
 def airtable_url(table_name):
     base_id=joints_base_id
     

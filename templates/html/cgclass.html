@@ -22,7 +22,10 @@
                     <td><a href="/cgclass/{{ record.connectiongroup_class }}" class="button">{{ record.connectiongroup_class }}</a></td>
                     <td>{{ record.Description_CGClass }}</td>
                     <td>{{ record.box_type[0] }}</td>
-                    <td><a href="{{ record.planilla }}" class="button">{{ "Planilla PDF" }}</a></td>
+                    <td>{% if record.planilla != None %}
+                        <a href="{{ record.planilla }}" class="button">{{ "Planilla PDF" }}</a>
+                      {% endif %}
+                    </td>
                 </tr>
             {% endfor %}
         </tbody>

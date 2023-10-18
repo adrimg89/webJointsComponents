@@ -11,10 +11,13 @@
     <table>
         <tr>
             <th>Component
-                <select class="filter-select" data-column-index="0" id="filter-Component"></select>
+                <input type="text" class="filter-input" data-column-index="0" id="filter-Component" placeholder="Filtrar">
             </th>
             <th>Status
                 <select class="filter-select" data-column-index="1" id="filter-Status"></select>
+            </th>
+            <th>Description
+                <input type="text" class="filter-input" data-column-index="2" id="filter-description" placeholder="Filtrar">
             </th>
         </tr>
       
@@ -23,6 +26,7 @@
                 <tr>
                     <td><a href="/eus/{{ component[0] }}" class="button">{{ component[0] }}</a></td>
                     <td>{{ component[1] }}</td>
+                    <td>{{ component[2] }}</td>
                 </tr>
             {% endfor %}
         </tbody>

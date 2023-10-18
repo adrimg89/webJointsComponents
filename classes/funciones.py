@@ -252,7 +252,7 @@ def getcomp():
     connection=rt_connection()
     cursor= connection.cursor()
     
-    query = "select code, status from component_type where status <> 'deprecated' order by code"
+    query = "select code, status, description from component_type where status <> 'deprecated' order by code"
 
     cursor.execute(query)
     

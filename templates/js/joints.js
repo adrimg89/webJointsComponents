@@ -90,17 +90,27 @@ $(document).ready(function () {
     });
 
     // Función para manejar el evento de cambio en el filtro de entrada de texto "Composition"
-    $("#filter-composition").on("input", function () {
-        var filterValue = $(this).val().toLowerCase();
+$("#filter-composition").on("input", function () {
+    actualizarFiltro();
+});
+
+    // Función para actualizar el filtro
+    function actualizarFiltro() {
+        // Obtener el valor del filtro de Composition
+        var filterValue = $("#filter-composition").val().toLowerCase();
 
         // Iterar a través de las filas de la tabla y mostrar/ocultar según el filtro
         $("table tr:gt(0)").each(function () {
             var cellText = $(this).find("td").eq(3).text().toLowerCase();
-            if (cellText.indexOf(filterValue) === -1) {
+
+            if (cellText.includes(filterValue) || filterValue === "") {
+                $(this).show();
+            } else {
                 $(this).hide();
             }
         });
-    });
+    }
+
 });
 
 

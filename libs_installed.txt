@@ -2,3 +2,6 @@ pip install flask
 pip install requests
 pip install mysql-connector-python
 pip install Flask-Login
+
+pip install ifcopenshell
+pip install pandas

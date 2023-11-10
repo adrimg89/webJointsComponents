@@ -869,7 +869,7 @@ def connectionlayers():
     #tipo de respuesta: [{'Performance': 1, 'Calculation Formula': 'Fix value', 'connection_type_code': 'H_T3-0003', 'material_id': 'MBRA0214'}, {'Performance': 60, 'Calculation Formula': 'Fix value', 'connection_type_code': 'H_T3-0003', 'material_id': 'MFIX0578'}]
 
 def alljlayers():
-    resultados_jlayers=jointsplayground_connect.list(jointlayers_table,fields=['joint_type_code','material_id','Performance','Calculation Formula','Current_material_cost','Long_Name (from Material)','Fase','units'])
+    resultados_jlayers=jointsplayground_connect.list(jointlayers_table,fields=['api_id','material_id','Performance','Calculation Formula','Current_material_cost','Long_Name (from Material)','Fase','units'])
     joints=[]
     for i in resultados_jlayers:
         joints.append(i['fields'])
@@ -877,11 +877,12 @@ def alljlayers():
     # tipo de respuesta: {'Performance': 1.05, 'Calculation Formula': 'Length * performance', 'joint_type_code': 'J_0351', 'material_id': 'MJNT4141', 'Current_material_cost': [5.81]}
     
 def allmatlayers():
-    resultados_matlayers=joints3playground_connect.list(materiallayers_table,view='API',fields=['api_material_group','api_Material','Performance','calculation_formula','current_material_cost','material_description','Fase'])
+    resultados_matlayers=joints3playground_connect.list(materiallayers_table,view='API',fields=['api_id','material_id','Performance','Calculation Formula','Current_material_cost','Long_Name (from Material)','Fase','units'])
     matlayers=[]
     for i in resultados_matlayers:
         matlayers.append(i['fields'])
     return matlayers
+    #tipo de respuesta: {'Performance': 1.05, 'calculation_formula': 'Length * performance', 'Fase': 'Onsite for Assembly', 'material_description': ['MJNT0847-Cinta monoadhesiva universal ROTHOBLAAS FLEXI60 60x25000mm -Poliacrilato -60   -ml'], 'api_material_group': 'CORE_17', 'api_Material': 'MJNT0847', 'current_material_cost': [0.54116]}
 
 
 
@@ -946,7 +947,7 @@ def jointtype_costcalculator (joint, long, airtable_jlayers):
     alljoint_layers=airtable_jlayers
     filteredjlayers=[]
     for i in alljoint_layers:
-        if joint in i['joint_type_code'] and joint!='':
+        if joint in i['api_id'] and joint!='':
             filteredjlayers.append(i)        
     joint_cost=0
     for layer in filteredjlayers:
@@ -1054,18 +1055,123 @@ def leer_archivo_xlsx(ruta):
     lista_resultado = []
     for index, fila in df.iterrows():
         diccionario_fila = {
-            'Parent Joint': fila[0] if pd.notna(fila[0]) else '',
-            'Joint Type': fila[1] if pd.notna(fila[1]) else '',
-            'ConnectionGroup Type': fila[2] if pd.notna(fila[2]) else '',
+            'JS_ParentJointInstanceID': fila[0] if pd.notna(fila[0]) else '',
+            'JS_JointTypeID': fila[1] if pd.notna(fila[1]) else '',
+            'JS_ConnectionGroupTypeID': fila[2] if pd.notna(fila[2]) else '',
             'Core Matgroup': fila[3] if pd.notna(fila[3]) else '',
             'Q1 Matgroup': fila[4] if pd.notna(fila[4]) else '',
             'Q2 Matgroup': fila[5] if pd.notna(fila[5]) else '',
             'Q3 Matgroup': fila[6] if pd.notna(fila[6]) else '',
             'Q4 Matgroup': fila[7] if pd.notna(fila[7]) else '',
-            'Long': fila[8] if pd.notna(fila[8]) else '',
-            'Nr Openings': fila[9] if pd.notna(fila[9]) else ''
+            'QU_Length_m': fila[8] if pd.notna(fila[8]) else '',
+            'nrbalconies': fila[9] if pd.notna(fila[9]) else ''
         }
         lista_resultado.append(diccionario_fila)
 
     return lista_resultado
+
+#------------------------------------------------------------PRUEBAS
+
+def matgroup_costcalculator (matgroup, long, airtable_matlayers):
+    matgroupelements=matgroup.split(',')        
+    filteredmatlayers=[]
+    for i in airtable_matlayers:
+        for matgroup in matgroupelements:
+            if matgroup in i['api_id'] and matgroup!='':
+                filteredmatlayers.append(i)        
+    matgroup_cost=0
+    for layer in filteredmatlayers:
+        material_sku=layer['material_id']
+        layer_performance=layer['Performance']
+        layer_formula=layer['Calculation Formula']
+        layer_currentmaterialcost=layer.get('Current_material_cost',[0])[0]
+        if layer_formula=='Length * performance':
+            quantity= layer_performance*long           
+            layer_cost=layer_currentmaterialcost*quantity 
+        elif layer_formula=='Fix value':
+            quantity=layer_performance
+            layer_cost=layer_currentmaterialcost*quantity  
+        layer['quantity']=quantity         
+        matgroup_cost=matgroup_cost+layer_cost
+    # print(joint_cost)
+    return matgroup_cost,filteredmatlayers
+
+def costeunionJ3 (joint, connectiongroup_type, corematgroup, Q1magtroup, Q2matgroup, Q3matgroup, Q4matgroup, long, openings,airtable_rlcgctype_data, airtable_clayers, airtable_jlayers, airtable_matlayers):
+    costejoint, joint_materials=jointtype_costcalculator(joint, long, airtable_jlayers)
+    costecorematgroup, corematgrouplayers=matgroup_costcalculator(corematgroup, long, airtable_matlayers)
+    costeQ1matgroup, Q1matgrouplayers=matgroup_costcalculator(Q1magtroup, long, airtable_matlayers)
+    costeQ2matgroup, Q2matgrouplayers=matgroup_costcalculator(Q2matgroup, long, airtable_matlayers)
+    costeQ3matgroup, Q3matgrouplayers=matgroup_costcalculator(Q3matgroup, long, airtable_matlayers)
+    costeQ4matgroup, Q4matgrouplayers=matgroup_costcalculator(Q4matgroup, long, airtable_matlayers)
+    costeconnection, connection_materials=connectiongroup_costcalculator(connectiongroup_type,long,openings,airtable_rlcgctype_data, airtable_clayers)
+    coste=costejoint+costeconnection+costecorematgroup+costeQ1matgroup+costeQ2matgroup+costeQ3matgroup+costeQ4matgroup
+    # matgroup_materials=corematgrouplayers+Q1matgrouplayers+Q2matgrouplayers+Q3matgrouplayers+Q4matgrouplayers
+    return coste, joint_materials, connection_materials, corematgrouplayers,Q1matgrouplayers,Q2matgrouplayers,Q3matgrouplayers,Q4matgrouplayers
+
+
+def boqfromlistofparentsJ3(parentsfromXLS):
+    airtable_rlcgctype_data=rl_cgtype_ctype()
+    airtable_clayers=connectionlayers()
+    airtable_jlayers=alljlayers()
+    airtable_matgrouplayers=allmatlayers()
+    listaconcoste=[]
+    listamateriales=[]    
+    listadeherrajes=[] 
+    for parent in parentsfromXLS:
+        coste_parent, materiales, herrajes, corematerials,Q1materials,Q2materials,Q3materials,Q4materials=costeunionJ3(parent['JS_JointTypeID'],parent['JS_ConnectionGroupTypeID'],parent['Core Matgroup'],parent['Q1 Matgroup'],parent['Q2 Matgroup'],parent['Q3 Matgroup'],parent['Q4 Matgroup'],parent['QU_Length_m'],parent['nrbalconies'],airtable_rlcgctype_data, airtable_clayers, airtable_jlayers,airtable_matgrouplayers)
+        parent['coste_parent']=coste_parent
+        listaconcoste.append(parent)
+        for material in materiales:
+            if material['api_id']!='':
+                material['parent_id']=parent['JS_ParentJointInstanceID']
+                listamateriales.append(material)
+        for herraje in herrajes:
+            # Crea una copia independiente de 'herraje'
+            nuevo_herraje = herraje.copy()
+            
+            # Agrega los parámetros adicionales
+            nuevo_herraje['parentjoint_id'] = parent['JS_ParentJointInstanceID']
+            nuevo_herraje['cgtype_id'] = parent['JS_ConnectionGroupTypeID']
+            
+            # Agrega la copia a la lista 'listadeherrajes'
+            listadeherrajes.append(nuevo_herraje)
+        for corematerial in corematerials:            
+            nuevo_corematerial = corematerial.copy()
+                        
+            nuevo_corematerial['parentjoint_id'] = parent['JS_ParentJointInstanceID']
+                                   
+            listamateriales.append(nuevo_corematerial)
+            
+        for Q1material in Q1materials:            
+            nuevo_Q1material = Q1material.copy()
+                        
+            nuevo_Q1material['parentjoint_id'] = parent['JS_ParentJointInstanceID']
+                      
+            listamateriales.append(nuevo_Q1material)
+            
+            
+        for Q2material in Q2materials:            
+            nuevo_Q2material = Q2material.copy()
+                        
+            nuevo_Q2material['parentjoint_id'] = parent['JS_ParentJointInstanceID']
+                      
+            listamateriales.append(nuevo_Q2material)
+            
+            
+        for Q3material in Q3materials:            
+            nuevo_Q3material = Q3material.copy()
+                        
+            nuevo_Q3material['parentjoint_id'] = parent['JS_ParentJointInstanceID']
+                      
+            listamateriales.append(nuevo_Q3material)
+            
+        for Q4material in Q4materials:            
+            nuevo_Q4material = Q4material.copy()
+                        
+            nuevo_Q4material['parentjoint_id'] = parent['JS_ParentJointInstanceID']
+                      
+            listamateriales.append(nuevo_Q4material)
+                        
+            
+    return listaconcoste,listamateriales,listadeherrajes
 

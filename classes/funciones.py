@@ -869,7 +869,7 @@ def connectionlayers():
     #tipo de respuesta: [{'Performance': 1, 'Calculation Formula': 'Fix value', 'connection_type_code': 'H_T3-0003', 'material_id': 'MBRA0214'}, {'Performance': 60, 'Calculation Formula': 'Fix value', 'connection_type_code': 'H_T3-0003', 'material_id': 'MFIX0578'}]
 
 def alljlayers():
-    resultados_jlayers=jointsplayground_connect.list(jointlayers_table,fields=['joint_type_code','material_id','Performance','Calculation Formula','Current_material_cost','Long_Name (from Material)','Fase'])
+    resultados_jlayers=jointsplayground_connect.list(jointlayers_table,fields=['joint_type_code','material_id','Performance','Calculation Formula','Current_material_cost','Long_Name (from Material)','Fase','units'])
     joints=[]
     for i in resultados_jlayers:
         joints.append(i['fields'])
@@ -1034,3 +1034,38 @@ def guardarxls(listaconcoste, listamateriales, listaherrajes, rutaifc):
     # Guarda el archivo Excel actualizado
     excel_file.save(ruta_excel)
     print('Archivo guardado con éxito')
+    
+
+def leer_archivo_xlsx(ruta):
+    # Leer el archivo xlsx
+    df = pd.read_excel(ruta, header=None)  # No asumir que la primera fila es un encabezado
+
+    # Verificar si hay datos en la primera columna
+    primera_columna = df.iloc[:, 0]
+    ultima_fila = primera_columna.last_valid_index()
+
+    if ultima_fila is None:
+        raise ValueError("No se encontraron datos en la primera columna.")
+
+    # Filtrar el DataFrame hasta la última fila con algún valor en la primera columna
+    df = df.loc[:ultima_fila]
+
+    # Crear una lista de diccionarios con los datos de cada fila
+    lista_resultado = []
+    for index, fila in df.iterrows():
+        diccionario_fila = {
+            'Parent Joint': fila[0] if pd.notna(fila[0]) else '',
+            'Joint Type': fila[1] if pd.notna(fila[1]) else '',
+            'ConnectionGroup Type': fila[2] if pd.notna(fila[2]) else '',
+            'Core Matgroup': fila[3] if pd.notna(fila[3]) else '',
+            'Q1 Matgroup': fila[4] if pd.notna(fila[4]) else '',
+            'Q2 Matgroup': fila[5] if pd.notna(fila[5]) else '',
+            'Q3 Matgroup': fila[6] if pd.notna(fila[6]) else '',
+            'Q4 Matgroup': fila[7] if pd.notna(fila[7]) else '',
+            'Long': fila[8] if pd.notna(fila[8]) else '',
+            'Nr Openings': fila[9] if pd.notna(fila[9]) else ''
+        }
+        lista_resultado.append(diccionario_fila)
+
+    return lista_resultado
+

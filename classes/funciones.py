@@ -535,7 +535,6 @@ def get_clayers(cgt):
     return records_list
 
 
-
 #--------------------------------------------------------------------------- LECTURA IFC cajas y conexiones
 
 import ifcopenshell
@@ -984,7 +983,7 @@ def boqfromlistofparents(parentsfromIFC):
         parent['coste_parent']=coste_parent
         listaconcoste.append(parent)
         for material in materiales:
-            if material['joint_type_code']!='':
+            if material['api_id']!='':
                 material['parent_id']=parent['JS_ParentJointInstanceID']
                 listamateriales.append(material)
         for herraje in herrajes:
@@ -999,22 +998,14 @@ def boqfromlistofparents(parentsfromIFC):
             listadeherrajes.append(nuevo_herraje)
     return listaconcoste,listamateriales,listadeherrajes
 
-def guardarxls(listaconcoste, listamateriales, listaherrajes, rutaifc):
+def guardarxlsfromIFC(listaconcoste, listamateriales, listaherrajes, rutaifc):
     nombrearchivo=os.path.splitext(os.path.basename(rutaifc))[0]
     df = pd.DataFrame(listaconcoste)
     ruta_excel = os.path.join(os.path.dirname(rutaifc), f'{nombrearchivo}.xlsx')
-    df.to_excel(ruta_excel, index=False)
+    df.to_excel(ruta_excel, index=False)    
     
-    # Abre el archivo Excel
-    excel_file = openpyxl.load_workbook(ruta_excel)
-    
-    # Crea una nueva hoja "Parent with cost" y guarda los datos de listaconcoste
-    # nueva_hoja = excel_file.create_sheet(title="Parent with cost")
-    # nueva_hoja.append(["parent_id", "jointtype_id", "cgtype_id", "longitud", "nrbalconies", "coste_parent"])
-    # for parent in listaconcoste:
-    #     nueva_hoja.append([parent["parent_id"], parent["jointtype_id"], parent["cgtype_id"], parent["longitud"], parent["nrbalconies"], parent["coste_parent"]])
-    
-    # Crea una hoja "Lista mat joints" y guarda los datos de listamateriales
+    excel_file = openpyxl.load_workbook(ruta_excel)    
+   
     nueva_hoja_materiales = excel_file.create_sheet(title="Lista mat joints")
     if listamateriales:
         keys = list(listamateriales[0].keys())
@@ -1070,8 +1061,6 @@ def leer_archivo_xlsx(ruta):
 
     return lista_resultado
 
-#------------------------------------------------------------PRUEBAS
-
 def matgroup_costcalculator (matgroup, long, airtable_matlayers):
     matgroupelements=matgroup.split(',')        
     filteredmatlayers=[]
@@ -1123,7 +1112,7 @@ def boqfromlistofparentsJ3(parentsfromXLS):
         listaconcoste.append(parent)
         for material in materiales:
             if material['api_id']!='':
-                material['parent_id']=parent['JS_ParentJointInstanceID']
+                material['parentjoint_id']=parent['JS_ParentJointInstanceID']
                 listamateriales.append(material)
         for herraje in herrajes:
             # Crea una copia independiente de 'herraje'
@@ -1175,3 +1164,42 @@ def boqfromlistofparentsJ3(parentsfromXLS):
             
     return listaconcoste,listamateriales,listadeherrajes
 
+def guardarxlsfromxls(listaconcoste, listamateriales, listaherrajes, ruta_excel):       
+    # Abre el archivo Excel
+    excel_file = openpyxl.load_workbook(ruta_excel)
+    
+    # Crea una nueva hoja "Parent with cost" y guarda los datos de listaconcoste
+    nueva_hoja = excel_file.create_sheet(title="Parent with cost")
+    if listaconcoste:
+        keys = list(listaconcoste[0].keys())
+        nueva_hoja.append(keys)
+        for elemento in listaconcoste:
+            row_data = [elemento[key] for key in keys]
+            nueva_hoja.append(row_data)
+        
+    # Crea una hoja "Lista mat joints" y guarda los datos de listamateriales
+    nueva_hoja_materiales = excel_file.create_sheet(title="Lista mat joints")
+    if listamateriales:
+        keys = list(listamateriales[0].keys())
+        nueva_hoja_materiales.append(keys)
+        for material in listamateriales:
+            row_data = [material[key][0] if isinstance(material.get(key, ''), list) else material.get(key, '') for key in keys]
+            nueva_hoja_materiales.append(row_data)
+    
+    # Crea una hoja "Lista herrajes" y guarda los datos de listaherrajes
+    nueva_hoja_herrajes = excel_file.create_sheet(title="Lista herrajes")
+    if listaherrajes:
+        keys = list(listaherrajes[0].keys())
+        nueva_hoja_herrajes.append(keys)
+        for herraje in listaherrajes:
+            row_data = [herraje[key][0] if isinstance(herraje.get(key, ''), list) else herraje.get(key, '') for key in keys]
+            nueva_hoja_herrajes.append(row_data)
+    
+    # Guarda el archivo Excel actualizado
+    excel_file.save(ruta_excel)
+    print('Archivo guardado con éxito')
+
+
+#-----------------------------------------------------PRUEBAS-------------------------------------------------
+#-------------------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------------------------------------

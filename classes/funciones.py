@@ -587,7 +587,12 @@ def boxes_info_joint(ruta):
         Box_type=Pset_QuantityTakeOff.get('Reference', '')
         inst_a=JS_Joint_Specification.get('JS_C01_ID', '')
         inst_b=JS_Joint_Specification.get('JS_C02_ID', '')
-        parameters_info={'RevitGUID':r_guid, 'JS_ParentJointInstanceID':parent_joint_id, 'JS_JointTypeID':JointTypeID, 'JS_ConnectionGroupTypeID':cgt, 'QU_Length_m':QU_Length, 'Box_type':Box_type, 'JS_C01_ID':inst_a, 'JS_C02_ID':inst_b}
+        corematgroup=JS_Joint_Specification.get('Corematgroup','')
+        Q1matgroup=JS_Joint_Specification.get('Q1matgroup','')
+        Q2matgroup=JS_Joint_Specification.get('Q2matgroup','')
+        Q3matgroup=JS_Joint_Specification.get('Q3matgroup','')
+        Q4matgroup=JS_Joint_Specification.get('Q4matgroup','')
+        parameters_info={'RevitGUID':r_guid, 'JS_ParentJointInstanceID':parent_joint_id, 'JS_JointTypeID':JointTypeID, 'JS_ConnectionGroupTypeID':cgt, 'Core Matgroup':corematgroup,'Q1 Matgroup':Q1matgroup, 'Q2 Matgroup':Q2matgroup,'Q3 Matgroup':Q3matgroup,'Q4 Matgroup':Q4matgroup,'QU_Length_m':QU_Length, 'Box_type':Box_type, 'JS_C01_ID':inst_a, 'JS_C02_ID':inst_b}
         boxes_info.append(parameters_info)
     
     return boxes_info
@@ -693,6 +698,7 @@ def nrtallopenings_byinstance(ruta):
     return recuento_balconerasporinstancia
 
 def getboxesfilteredwithbalconies(ruta):
+    herrajesmodelados=getmodeledconnections(ruta)
     balcony_instances_input=nrtallopenings_byinstance(ruta)
     allboxes_info_filtered_input=get_boxesfilteredbyPJ(ruta)
     boxesandbalconys=[]
@@ -712,7 +718,7 @@ def getboxesfilteredwithbalconies(ruta):
         else:
             i['nrbalconies']=0
             boxesandbalconys.append(i)
-    return boxesandbalconys
+    return boxesandbalconys,herrajesmodelados
 
 def getmodeledconnections(ruta):
     connections_info=[]    
@@ -732,7 +738,7 @@ def getmodeledconnections(ruta):
         parameters_info={'RevitGUID':r_guid,'JS_ParentJointInstanceID': parent_joint_id, 'JS_ConnectionTypeID':connectiontype_id}
         connections_info.append(parameters_info)        
     
-        recuento = {}
+    recuento = {}
     
     for item in connections_info:
         parent_joint_id = item['JS_ParentJointInstanceID']
@@ -746,17 +752,27 @@ def getmodeledconnections(ruta):
         else:
             recuento[parent_joint_id] = {connection_type_id: 1}
     
-    resultado = []
+    resultados = []
     
     for parent_joint_id, connection_types in recuento.items():
         for connection_type_id, count in connection_types.items():
-            resultado.append({
+            resultados.append({
                 'ParentJoint_id': parent_joint_id,
                 'Connectiontype_id': connection_type_id,
                 'nr_units': count
             })
     
-    return resultado
+    listconnectiontypesmodelados=[]
+    for herraje in resultados:
+        new_herraje={'Calculation Formula':'Fix value',
+                     'Performance':herraje['nr_units'],
+                     'connection_type':herraje['Connectiontype_id'],
+                     'connectiongroup_type_id':'',
+                     'is_modeled':'modeled',
+                     'parentjoint_id':herraje['ParentJoint_id']}
+        listconnectiontypesmodelados.append(new_herraje)
+    
+    return listconnectiontypesmodelados
 
 
 #--------------------------------------------------------------------------- Funciones búsqueda datos para generar BOQ Joints y Connections
@@ -834,13 +850,6 @@ def connectionlayers_of_connectiontype(connection_type):
     return(clayers)
     #tipo de respuesta: [{'Performance': 1, 'Calculation Formula': 'Fix value', 'connection_type_code': 'H_T3-0003', 'material_id': 'MBRA0214'}, {'Performance': 60, 'Calculation Formula': 'Fix value', 'connection_type_code': 'H_T3-0003', 'material_id': 'MFIX0578'}]
 
-# def materialcost(sku):
-#     resultados_materiales = materials_connect.list(materials_table, view='API', fields = ['Material_SKU','Current Material Cost','Units'],filter="SEARCH('"+sku+"', {Material_SKU})")
-#     materials=[]
-#     for i in resultados_materiales:
-#         materials.append(i['fields'])
-#     return materials
-    #tipo de respuesta: [{'Material_SKU': 'MBRA0214', 'Current Material Cost': 7.57}]
     
 def jlayers(joint):
     resultados_jlayers=jointsplayground_connect.list(jointlayers_table,fields=['joint_type_code','material_id','Performance','Calculation Formula','Current_material_cost'],filter="SEARCH('"+joint+"',{joint_type_code})")
@@ -852,7 +861,7 @@ def jlayers(joint):
 
 
 def rl_cgtype_ctype():
-    resultados_rl_cgtype_ctype = jointsplayground_connect.list(rl_cgtype_ctype_table, view='AMG_Export', fields=['connectiongroup_type_id','connection_type','Performance','Calculation Formula'])
+    resultados_rl_cgtype_ctype = jointsplayground_connect.list(rl_cgtype_ctype_table, view='AMG_Export', fields=['connectiongroup_type_id','connection_type','Performance','Calculation Formula','is_modeled'])
     connection_types = []    
     for i in resultados_rl_cgtype_ctype:
         connection_types.append(i['fields'])
@@ -860,7 +869,7 @@ def rl_cgtype_ctype():
     #tipo de respuesta: [{'Calculation Formula': 'Fix value', 'Performance': 3, 'connection_type': 'H_T3-0003', 'connectiongroup_type_id': 'CG_0004'}, {'Calculation Formula': 'Length * performance', 'Performance': 5, 'connection_type': 'H_C1-0023', 'connectiongroup_type_id': 'CG_0004'}]
 
 def connectionlayers():
-    resultados_connectionlayers=jointsplayground_connect.list(clayers_table,fields=['connection_type_code','material_id','Performance','Calculation Formula','Current_material_cost','Units','Description (from Material)','Fase'])
+    resultados_connectionlayers=jointsplayground_connect.list(clayers_table,fields=['connection_type_code','material_id','Performance','Calculation Formula','Current_material_cost','Units','Description (from Material)','Fase', 'is_modeled'])
     clayers=[]
     for i in resultados_connectionlayers:
         clayers.append(i['fields'])
@@ -885,11 +894,12 @@ def allmatlayers():
 
 
 
-def connectiongroup_costcalculator(connectiongroup_type, long, openings, airtable_rlcgctype_data, airtable_clayers):
+def connectiongroup_costcalculator(parentid,connectiongroup_type, long, openings, airtable_rlcgctype_data, airtable_clayers):
     finalclayers=[]    
     filteredconnectiontypes=[]
     for i in airtable_rlcgctype_data:
         if connectiongroup_type in i['connectiongroup_type_id'] and connectiongroup_type!='':
+            i['parentjoint_id']=parentid
             filteredconnectiontypes.append(i)
         
     connectiongroup_cost = 0
@@ -902,6 +912,7 @@ def connectiongroup_costcalculator(connectiongroup_type, long, openings, airtabl
         
         for i in allclayers:
             if connectiontype_id in i['connection_type_code']:
+                i['parentjoint_id']=parentid
                 filteredclayers.append(i)
                 
         for clayer in filteredclayers:
@@ -917,36 +928,288 @@ def connectiongroup_costcalculator(connectiongroup_type, long, openings, airtabl
                         quantity=math.ceil(material_performance*connectiontype_performance*long)
                         connectiongroup_cost=connectiongroup_cost+material_cost*quantity
                         clayer['quantity']=quantity
+                        clayer['layer_cost']=material_cost*quantity
                     elif connectiontype_calcform=='Opening * performance':
                         quantity=material_performance*connectiontype_performance*openings
                         connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
-                        clayer['quantity']=quantity                        
+                        clayer['quantity']=quantity  
+                        clayer['layer_cost']=material_cost*quantity                      
                     else:
                         quantity=material_performance*connectiontype_performance
                         connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
                         clayer['quantity']=quantity
+                        clayer['layer_cost']=material_cost*quantity
                 else:
                     if connectiontype_calcform=='Length * performance':
                         quantity=material_performance*connectiontype_performance*long
                         connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
                         clayer['quantity']=quantity
+                        clayer['layer_cost']=material_cost*quantity
                     elif connectiontype_calcform=='Opening * performance':
                         quantity=material_performance*connectiontype_performance*openings
                         connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
                         clayer['quantity']=quantity
+                        clayer['layer_cost']=material_cost*quantity
                     else:
                         quantity=material_performance*connectiontype_performance
                         connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
                         clayer['quantity']=quantity
+                        clayer['layer_cost']=material_cost*quantity
             finalclayers.append(clayer)
-    return connectiongroup_cost,finalclayers     
+    return connectiongroup_cost,finalclayers    
+
+def inferredandmodeled_advanced_connectiongroup_costcalculator(parentid,connectiongroup_type, long, openings, airtable_rlcgctype_data, airtable_clayers,herrajesmodelados): #calcula el coste y la lista teniendo en cuenta para cada parent joint si tiene elementos modelados o no
+    inferredconnectiontypes=[]
+    modeledconnectiontypes=herrajesmodelados
+    finalconnectiontypes=[]
+    
+    inferredandmodeledclayers=[]
+
+    listadeparentsconalgunherrajemodelado=[]
+    
+    for i in modeledconnectiontypes:
+        if i['parentjoint_id'] not in listadeparentsconalgunherrajemodelado:
+            listadeparentsconalgunherrajemodelado.append(i['parentjoint_id'])
+        
+    
+    for line in airtable_rlcgctype_data:
+        
+        if connectiongroup_type in line['connectiongroup_type_id'] and connectiongroup_type!='':
+            line['parentjoint_id']=parentid                  
+            inferredconnectiontypes.append(line)
+            
+    if inferredconnectiontypes==[]:
+        for herraje in modeledconnectiontypes:
+            if parentid==herraje['parentjoint_id']:
+                finalconnectiontypes.append(herraje)
+        
+    
+    recuentodeconnectiontypes=[]
+            
+    for connectiontype in inferredconnectiontypes:
+        if connectiontype['is_modeled'][0]=='Yes':
+            if connectiontype['parentjoint_id'] not in listadeparentsconalgunherrajemodelado:
+                finalconnectiontypes.append(connectiontype)
+            for herraje in modeledconnectiontypes:
+                if herraje['parentjoint_id']==connectiontype['parentjoint_id'] and herraje['connection_type']==connectiontype['connection_type']:
+                #si coinciden el parent y el connection type
+                    if herraje['connection_type'] not in recuentodeconnectiontypes:
+                        newconnectiontype=connectiontype.copy()
+                        newconnectiontype['Calculation Formula']='Fix value' 
+                        newconnectiontype['Performance']=herraje['Performance']  
+                        newconnectiontype['is_modeled']='modeled' 
+                        recuentodeconnectiontypes.append(herraje['connection_type'])
+                        finalconnectiontypes.append(newconnectiontype)
+                if herraje['parentjoint_id']==connectiontype['parentjoint_id'] and herraje['connection_type']!=connectiontype['connection_type']:
+                #si coinciden el parent y pero el connectiontype es diferente    
+                    if herraje['connection_type'] not in recuentodeconnectiontypes:
+                        newconnectiontype={}
+                        newconnectiontype['Calculation Formula']='Fix value' 
+                        newconnectiontype['Performance']=herraje['Performance'] 
+                        newconnectiontype['connection_type']=herraje['connection_type']
+                        newconnectiontype['connectiongroup_type_id']='' 
+                        newconnectiontype['is_modeled']='modeled' 
+                        newconnectiontype['parentjoint_id']=herraje['parentjoint_id']
+                        recuentodeconnectiontypes.append(herraje['connection_type'])
+                        finalconnectiontypes.append(newconnectiontype)
+                
+                    
+        if connectiontype['is_modeled'][0]=='No':
+            finalconnectiontypes.append(connectiontype)
+                        
+    connectiongroup_cost = 0
+    for connectiontype in finalconnectiontypes:
+        connectiontype_id=connectiontype['connection_type']
+        connectiontype_calcform=connectiontype['Calculation Formula']
+        connectiontype_performance=connectiontype['Performance']          
+        allclayers=airtable_clayers
+        filteredclayers=[]
+        
+        for i in allclayers:
+            if connectiontype_id in i['connection_type_code']:
+                i['parentjoint_id']=parentid
+                filteredclayers.append(i)
+                
+        for clayer in filteredclayers:
+            material_performance=clayer['Performance']
+            material_formula=clayer['Calculation Formula']
+            material_sku=clayer['material_id']
+            material_cost=clayer.get('Current_material_cost',[0])[0]
+            material_unit=clayer['Units'][0]                     
+            
+            if material_formula=='Fix value':
+                if material_unit=='U':
+                    if connectiontype_calcform=='Length * performance':
+                        quantity=math.ceil(material_performance*connectiontype_performance*long)
+                        connectiongroup_cost=connectiongroup_cost+material_cost*quantity
+                        clayer['quantity']=quantity
+                        clayer['layer_cost']=material_cost*quantity
+                    elif connectiontype_calcform=='Opening * performance':
+                        quantity=material_performance*connectiontype_performance*openings
+                        connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
+                        clayer['quantity']=quantity
+                        clayer['layer_cost']=material_cost*quantity                        
+                    else:
+                        quantity=material_performance*connectiontype_performance
+                        connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
+                        clayer['quantity']=quantity
+                        clayer['layer_cost']=material_cost*quantity
+                else:
+                    if connectiontype_calcform=='Length * performance':
+                        quantity=material_performance*connectiontype_performance*long
+                        connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
+                        clayer['quantity']=quantity
+                        clayer['layer_cost']=material_cost*quantity
+                    elif connectiontype_calcform=='Opening * performance':
+                        quantity=material_performance*connectiontype_performance*openings
+                        connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
+                        clayer['quantity']=quantity
+                        clayer['layer_cost']=material_cost*quantity
+                    else:
+                        quantity=material_performance*connectiontype_performance
+                        connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
+                        clayer['quantity']=quantity
+                        clayer['layer_cost']=material_cost*quantity
+            inferredandmodeledclayers.append(clayer)        
+            
+    return connectiongroup_cost, inferredandmodeledclayers 
+
+def inferrednotmodeled_connectiongroup_costcalculator(parentid,connectiongroup_type, long, openings, airtable_rlcgctype_data, airtable_clayers,herrajesmodelados): #calcula el coste y la lista teniendo en cuenta para cada parent joint si tiene elementos modelados o no
+    inferrednotmodeledclayers=[]    
+    inferredconnectiontypes=[]
+    inferrednotmodeledconnectiontypes=[]
+        
+    parent_connectiontype={}
+    
+    recuento={}
+    
+    for herraje in herrajesmodelados:
+        ParentJoint_id=herraje['parentjoint_id']
+        Connectiontype_id=herraje['connection_type']
+        if ParentJoint_id in parent_connectiontype:
+            parent_connectiontype[ParentJoint_id].append(Connectiontype_id)
+        else:
+            parent_connectiontype[ParentJoint_id]=[Connectiontype_id]
+    
+    # parent_connectiontype_formateado=[{'ParentJoint_id':key,'Connectiontype_id':value} for key,value in parent_connectiontype.items()]
+                    
+    for line in airtable_rlcgctype_data:
+        
+        if connectiongroup_type in line['connectiongroup_type_id'] and connectiongroup_type!='':
+            line['parentjoint_id']=parentid                  
+            inferredconnectiontypes.append(line)
+    
+    for line in inferredconnectiontypes:        
+        if line['is_modeled'][0]=='No':
+            inferrednotmodeledconnectiontypes.append(line)
+    
+    connectiongroup_cost = 0
+    for connectiontype in inferrednotmodeledconnectiontypes:
+        connectiontype_id=connectiontype['connection_type']
+        connectiontype_calcform=connectiontype['Calculation Formula']
+        connectiontype_performance=connectiontype['Performance']          
+        allclayers=airtable_clayers
+        filteredclayers=[]
+        
+        for i in allclayers:
+            if connectiontype_id in i['connection_type_code']:
+                i['parentjoint_id']=parentid
+                filteredclayers.append(i)
+                
+        for clayer in filteredclayers:
+            material_performance=clayer['Performance']
+            material_formula=clayer['Calculation Formula']
+            material_sku=clayer['material_id']
+            material_cost=clayer.get('Current_material_cost',[0])[0]
+            material_unit=clayer['Units'][0]                     
+            
+            if material_formula=='Fix value':
+                if material_unit=='U':
+                    if connectiontype_calcform=='Length * performance':
+                        quantity=math.ceil(material_performance*connectiontype_performance*long)
+                        connectiongroup_cost=connectiongroup_cost+material_cost*quantity
+                        clayer['quantity']=quantity
+                        clayer['layer_cost']=material_cost*quantity
+                    elif connectiontype_calcform=='Opening * performance':
+                        quantity=material_performance*connectiontype_performance*openings
+                        connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
+                        clayer['quantity']=quantity
+                        clayer['layer_cost']=material_cost*quantity                        
+                    else:
+                        quantity=material_performance*connectiontype_performance
+                        connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
+                        clayer['quantity']=quantity
+                        clayer['layer_cost']=material_cost*quantity
+                else:
+                    if connectiontype_calcform=='Length * performance':
+                        quantity=material_performance*connectiontype_performance*long
+                        connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
+                        clayer['quantity']=quantity
+                        clayer['layer_cost']=material_cost*quantity
+                    elif connectiontype_calcform=='Opening * performance':
+                        quantity=material_performance*connectiontype_performance*openings
+                        connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
+                        clayer['quantity']=quantity
+                        clayer['layer_cost']=material_cost*quantity
+                    else:
+                        quantity=material_performance*connectiontype_performance
+                        connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
+                        clayer['quantity']=quantity
+                        clayer['layer_cost']=material_cost*quantity
+            inferrednotmodeledclayers.append(clayer)
+    return inferrednotmodeledclayers
+
+def realmodeledconnections_costcalculator(herrajesmodelados, airtable_clayers):
+    realmodeled_clayers=[]
+    connectiontypes=herrajesmodelados
+    # for herraje in herrajesmodelados:
+    #     connectiontype={}
+    #     connectiontype['Calculation Formula']='Fix value'
+    #     connectiontype['Performance']=herraje['Performance']
+    #     connectiontype['connection_type']=herraje['connection_type']
+    #     connectiontype['connectiongroup_type_id']=''
+    #     connectiontype['is_modeled']=''
+    #     connectiontype['parentjoint_id']='NoParentAssociated'
+    #     if connectiontype['connection_type']!='':
+    #         connectiontypes.append(connectiontype)
+    
+    for connectiontype in connectiontypes:
+        connectiontype_id=connectiontype['connection_type']
+        connectiontype_calcform=connectiontype['Calculation Formula']
+        connectiontype_performance=connectiontype['Performance']          
+        allclayers=airtable_clayers
+        filteredclayers=[]
+        
+        for i in allclayers:
+            if connectiontype_id in i['connection_type_code']:
+                i['parentjoint_id']=connectiontype.get('parentjoint_id','NoParentAssociated')
+                filteredclayers.append(i)
+                
+        for clayer in filteredclayers:
+            material_performance=clayer['Performance']
+            material_formula=clayer['Calculation Formula']            
+            material_cost=clayer.get('Current_material_cost',[0])[0]
+            material_unit=clayer['Units'][0]                     
+            
+            if material_formula=='Fix value':
+                if material_unit=='U':                                                                          
+                    quantity=material_performance*connectiontype_performance                                            
+                    clayer['quantity']=quantity
+                    clayer['layer_cost']=material_cost*quantity
+                else:                    
+                    quantity=material_performance*connectiontype_performance                                            
+                    clayer['quantity']=quantity
+                    clayer['layer_cost']=material_cost*quantity
+            realmodeled_clayers.append(clayer)
+    
+    return realmodeled_clayers 
  
- 
-def jointtype_costcalculator (joint, long, airtable_jlayers):
+def jointtype_costcalculator (parentid,joint, long, airtable_jlayers):
     alljoint_layers=airtable_jlayers
     filteredjlayers=[]
     for i in alljoint_layers:
         if joint in i['api_id'] and joint!='':
+            i['parentjoint_id']=parentid
             filteredjlayers.append(i)        
     joint_cost=0
     for layer in filteredjlayers:
@@ -960,43 +1223,17 @@ def jointtype_costcalculator (joint, long, airtable_jlayers):
         elif layer_formula=='Fix value':
             quantity=layer_performance
             layer_cost=layer_currentmaterialcost*quantity  
-        layer['quantity']=quantity         
+        layer['quantity']=quantity 
+        layer['layer_cost']=layer_cost       
         joint_cost=joint_cost+layer_cost
     # print(joint_cost)
     return joint_cost,filteredjlayers
           
-def costeunion (joint, connectiongroup_type, long, openings,airtable_rlcgctype_data, airtable_clayers, airtable_jlayers):
-    costejoint, joint_materials=jointtype_costcalculator(joint, long, airtable_jlayers)
-    costeconnection, connection_materials=connectiongroup_costcalculator(connectiongroup_type,long,openings,airtable_rlcgctype_data, airtable_clayers)
+# def costeunion (parentid,joint, connectiongroup_type, long, openings,airtable_rlcgctype_data, airtable_clayers, airtable_jlayers):
+    costejoint, joint_materials=jointtype_costcalculator(parentid, joint, long, airtable_jlayers)
+    costeconnection, connection_materials=connectiongroup_costcalculator(parentid, connectiongroup_type,long,openings,airtable_rlcgctype_data, airtable_clayers)
     coste=costejoint+costeconnection
     return coste, joint_materials, connection_materials
-
-def boqfromlistofparents(parentsfromIFC):
-    airtable_rlcgctype_data=rl_cgtype_ctype()
-    airtable_clayers=connectionlayers()
-    airtable_jlayers=alljlayers()
-    listaconcoste=[]
-    listamateriales=[]
-    listadeherrajes=[] 
-    for parent in parentsfromIFC:
-        coste_parent, materiales, herrajes=costeunion(parent['JS_JointTypeID'],parent['JS_ConnectionGroupTypeID'],parent['QU_Length_m'],parent['nrbalconies'],airtable_rlcgctype_data, airtable_clayers, airtable_jlayers)
-        parent['coste_parent']=coste_parent
-        listaconcoste.append(parent)
-        for material in materiales:
-            if material['api_id']!='':
-                material['parent_id']=parent['JS_ParentJointInstanceID']
-                listamateriales.append(material)
-        for herraje in herrajes:
-            # Crea una copia independiente de 'herraje'
-            nuevo_herraje = herraje.copy()
-            
-            # Agrega los parámetros adicionales
-            nuevo_herraje['parentjoint_id'] = parent['JS_ParentJointInstanceID']
-            nuevo_herraje['cgtype_id'] = parent['JS_ConnectionGroupTypeID']
-            
-            # Agrega la copia a la lista 'listadeherrajes'
-            listadeherrajes.append(nuevo_herraje)
-    return listaconcoste,listamateriales,listadeherrajes
 
 def guardarxlsfromIFC(listaconcoste, listamateriales, listaherrajes, rutaifc):
     nombrearchivo=os.path.splitext(os.path.basename(rutaifc))[0]
@@ -1004,7 +1241,9 @@ def guardarxlsfromIFC(listaconcoste, listamateriales, listaherrajes, rutaifc):
     ruta_excel = os.path.join(os.path.dirname(rutaifc), f'{nombrearchivo}.xlsx')
     df.to_excel(ruta_excel, index=False)    
     
-    excel_file = openpyxl.load_workbook(ruta_excel)    
+    excel_file = openpyxl.load_workbook(ruta_excel)  
+    
+    excel_file.active.title="Parentwithcost"  
    
     nueva_hoja_materiales = excel_file.create_sheet(title="Lista mat joints")
     if listamateriales:
@@ -1061,12 +1300,13 @@ def leer_archivo_xlsx(ruta):
 
     return lista_resultado
 
-def matgroup_costcalculator (matgroup, long, airtable_matlayers):
+def matgroup_costcalculator (parentid,matgroup, long, airtable_matlayers):
     matgroupelements=matgroup.split(',')        
     filteredmatlayers=[]
     for i in airtable_matlayers:
         for matgroup in matgroupelements:
             if matgroup in i['api_id'] and matgroup!='':
+                i['parentjoint_id']=parentid
                 filteredmatlayers.append(i)        
     matgroup_cost=0
     for layer in filteredmatlayers:
@@ -1080,46 +1320,72 @@ def matgroup_costcalculator (matgroup, long, airtable_matlayers):
         elif layer_formula=='Fix value':
             quantity=layer_performance
             layer_cost=layer_currentmaterialcost*quantity  
-        layer['quantity']=quantity         
+        layer['quantity']=quantity
+        layer['layer_cost']=layer_cost         
         matgroup_cost=matgroup_cost+layer_cost
     # print(joint_cost)
     return matgroup_cost,filteredmatlayers
 
-def costeunionJ3 (joint, connectiongroup_type, corematgroup, Q1magtroup, Q2matgroup, Q3matgroup, Q4matgroup, long, openings,airtable_rlcgctype_data, airtable_clayers, airtable_jlayers, airtable_matlayers):
-    costejoint, joint_materials=jointtype_costcalculator(joint, long, airtable_jlayers)
-    costecorematgroup, corematgrouplayers=matgroup_costcalculator(corematgroup, long, airtable_matlayers)
-    costeQ1matgroup, Q1matgrouplayers=matgroup_costcalculator(Q1magtroup, long, airtable_matlayers)
-    costeQ2matgroup, Q2matgrouplayers=matgroup_costcalculator(Q2matgroup, long, airtable_matlayers)
-    costeQ3matgroup, Q3matgrouplayers=matgroup_costcalculator(Q3matgroup, long, airtable_matlayers)
-    costeQ4matgroup, Q4matgrouplayers=matgroup_costcalculator(Q4matgroup, long, airtable_matlayers)
-    costeconnection, connection_materials=connectiongroup_costcalculator(connectiongroup_type,long,openings,airtable_rlcgctype_data, airtable_clayers)
-    coste=costejoint+costeconnection+costecorematgroup+costeQ1matgroup+costeQ2matgroup+costeQ3matgroup+costeQ4matgroup
+def costeunionJ3 (parentid,joint, connectiongroup_type, corematgroup, Q1magtroup, Q2matgroup, Q3matgroup, Q4matgroup, long, openings,airtable_rlcgctype_data, airtable_clayers, airtable_jlayers, airtable_matlayers,herrajesmodelados,inputcalculoconexion):
+    
+       
+    costejoint, joint_materials=jointtype_costcalculator(parentid,joint, long, airtable_jlayers)
+    costecorematgroup, corematgrouplayers=matgroup_costcalculator(parentid,corematgroup, long, airtable_matlayers)
+    costeQ1matgroup, Q1matgrouplayers=matgroup_costcalculator(parentid,Q1magtroup, long, airtable_matlayers)
+    costeQ2matgroup, Q2matgrouplayers=matgroup_costcalculator(parentid,Q2matgroup, long, airtable_matlayers)
+    costeQ3matgroup, Q3matgrouplayers=matgroup_costcalculator(parentid,Q3matgroup, long, airtable_matlayers)
+    costeQ4matgroup, Q4matgrouplayers=matgroup_costcalculator(parentid,Q4matgroup, long, airtable_matlayers)
+    if inputcalculoconexion == 'a':
+        # print('Se reportarán los datos inferidos en las cajas')
+        costeconnection, connection_materials=connectiongroup_costcalculator(parentid,connectiongroup_type,long,openings,airtable_rlcgctype_data, airtable_clayers)
+        coste=costejoint+costeconnection+costecorematgroup+costeQ1matgroup+costeQ2matgroup+costeQ3matgroup+costeQ4matgroup
+    elif inputcalculoconexion=='b':
+        # print('Se comprobará para cada parent si tiene herrajes modelados. Si hay algo modelado será reportado junto con lo inferido que tenga tipificado "is_modeled=No"')
+        costeconnection, connection_materials=inferredandmodeled_advanced_connectiongroup_costcalculator(parentid,connectiongroup_type,long,openings,airtable_rlcgctype_data, airtable_clayers,herrajesmodelados)
+        coste=costejoint+costeconnection+costecorematgroup+costeQ1matgroup+costeQ2matgroup+costeQ3matgroup+costeQ4matgroup
+    elif inputcalculoconexion=='c':
+        # print("""De las cajas únicamente se reportará todo lo que esté marcado como "is_modeled=No".
+        #       La pestaña "Parentwithcost" no mostrará el coste correcto. Revisar coste en Listamateriales y Listaherrajes""")
+        connection_inferred_materials=inferrednotmodeled_connectiongroup_costcalculator(parentid,connectiongroup_type,long,openings,airtable_rlcgctype_data, airtable_clayers,herrajesmodelados)
+        # connection_modeled_materials=realmodeledconnections_costcalculator(herrajesmodelados,airtable_clayers)
+        coste=''
+        connection_materials=connection_inferred_materials
+    else:
+        pass
+        
     # matgroup_materials=corematgrouplayers+Q1matgrouplayers+Q2matgrouplayers+Q3matgrouplayers+Q4matgrouplayers
     return coste, joint_materials, connection_materials, corematgrouplayers,Q1matgrouplayers,Q2matgrouplayers,Q3matgrouplayers,Q4matgrouplayers
 
-
-def boqfromlistofparentsJ3(parentsfromXLS):
+def boqfromlistofparentsJ3(parents,herrajesmodelados,inputcalculoconexion):
     airtable_rlcgctype_data=rl_cgtype_ctype()
     airtable_clayers=connectionlayers()
     airtable_jlayers=alljlayers()
     airtable_matgrouplayers=allmatlayers()
     listaconcoste=[]
     listamateriales=[]    
-    listadeherrajes=[] 
-    for parent in parentsfromXLS:
-        coste_parent, materiales, herrajes, corematerials,Q1materials,Q2materials,Q3materials,Q4materials=costeunionJ3(parent['JS_JointTypeID'],parent['JS_ConnectionGroupTypeID'],parent['Core Matgroup'],parent['Q1 Matgroup'],parent['Q2 Matgroup'],parent['Q3 Matgroup'],parent['Q4 Matgroup'],parent['QU_Length_m'],parent['nrbalconies'],airtable_rlcgctype_data, airtable_clayers, airtable_jlayers,airtable_matgrouplayers)
+    listadeherrajes=[]
+    
+    if inputcalculoconexion=='c':
+        connection_modeled_materials=realmodeledconnections_costcalculator(herrajesmodelados,airtable_clayers)
+        for i in connection_modeled_materials:
+            i['cgtype_id']=''
+            listadeherrajes.append(i)
+        
+    
+    for parent in parents:
+        coste_parent, materiales, herrajes, corematerials,Q1materials,Q2materials,Q3materials,Q4materials=costeunionJ3(parent['JS_ParentJointInstanceID'],parent['JS_JointTypeID'],parent['JS_ConnectionGroupTypeID'],parent['Core Matgroup'],parent['Q1 Matgroup'],parent['Q2 Matgroup'],parent['Q3 Matgroup'],parent['Q4 Matgroup'],parent['QU_Length_m'],parent['nrbalconies'],airtable_rlcgctype_data, airtable_clayers, airtable_jlayers,airtable_matgrouplayers,herrajesmodelados,inputcalculoconexion)
         parent['coste_parent']=coste_parent
         listaconcoste.append(parent)
         for material in materiales:
             if material['api_id']!='':
-                material['parentjoint_id']=parent['JS_ParentJointInstanceID']
+                # material['parentjoint_id']=parent['JS_ParentJointInstanceID']
                 listamateriales.append(material)
         for herraje in herrajes:
             # Crea una copia independiente de 'herraje'
             nuevo_herraje = herraje.copy()
             
             # Agrega los parámetros adicionales
-            nuevo_herraje['parentjoint_id'] = parent['JS_ParentJointInstanceID']
+            # nuevo_herraje['parentjoint_id'] = parent['JS_ParentJointInstanceID']
             nuevo_herraje['cgtype_id'] = parent['JS_ConnectionGroupTypeID']
             
             # Agrega la copia a la lista 'listadeherrajes'
@@ -1127,14 +1393,14 @@ def boqfromlistofparentsJ3(parentsfromXLS):
         for corematerial in corematerials:            
             nuevo_corematerial = corematerial.copy()
                         
-            nuevo_corematerial['parentjoint_id'] = parent['JS_ParentJointInstanceID']
+            # nuevo_corematerial['parentjoint_id'] = parent['JS_ParentJointInstanceID']
                                    
             listamateriales.append(nuevo_corematerial)
             
         for Q1material in Q1materials:            
             nuevo_Q1material = Q1material.copy()
                         
-            nuevo_Q1material['parentjoint_id'] = parent['JS_ParentJointInstanceID']
+            # nuevo_Q1material['parentjoint_id'] = parent['JS_ParentJointInstanceID']
                       
             listamateriales.append(nuevo_Q1material)
             
@@ -1142,7 +1408,7 @@ def boqfromlistofparentsJ3(parentsfromXLS):
         for Q2material in Q2materials:            
             nuevo_Q2material = Q2material.copy()
                         
-            nuevo_Q2material['parentjoint_id'] = parent['JS_ParentJointInstanceID']
+            # nuevo_Q2material['parentjoint_id'] = parent['JS_ParentJointInstanceID']
                       
             listamateriales.append(nuevo_Q2material)
             
@@ -1150,14 +1416,14 @@ def boqfromlistofparentsJ3(parentsfromXLS):
         for Q3material in Q3materials:            
             nuevo_Q3material = Q3material.copy()
                         
-            nuevo_Q3material['parentjoint_id'] = parent['JS_ParentJointInstanceID']
+            # nuevo_Q3material['parentjoint_id'] = parent['JS_ParentJointInstanceID']
                       
             listamateriales.append(nuevo_Q3material)
             
         for Q4material in Q4materials:            
             nuevo_Q4material = Q4material.copy()
                         
-            nuevo_Q4material['parentjoint_id'] = parent['JS_ParentJointInstanceID']
+            # nuevo_Q4material['parentjoint_id'] = parent['JS_ParentJointInstanceID']
                       
             listamateriales.append(nuevo_Q4material)
                         
@@ -1203,3 +1469,126 @@ def guardarxlsfromxls(listaconcoste, listamateriales, listaherrajes, ruta_excel)
 #-----------------------------------------------------PRUEBAS-------------------------------------------------
 #-------------------------------------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------------------------------------
+
+# def WIP_inferredandmodeled_advanced_connectiongroup_costcalculator(parentid,connectiongroup_type, long, openings, airtable_rlcgctype_data, airtable_clayers,herrajesmodelados): 
+    inferredconnectiontypes=[]
+    modeledconnectiontypes=herrajesmodelados
+    finalconnectiontypes=[]
+    
+    inferredandmodeledclayers=[]
+
+    listadeparentsconalgunherrajemodelado=[]
+    
+    for i in modeledconnectiontypes:
+        if i['parentjoint_id'] not in listadeparentsconalgunherrajemodelado:
+            listadeparentsconalgunherrajemodelado.append(i['parentjoint_id'])
+        
+    
+    for line in airtable_rlcgctype_data:
+        
+        if connectiongroup_type in line['connectiongroup_type_id'] and connectiongroup_type!='':
+            line['parentjoint_id']=parentid                  
+            inferredconnectiontypes.append(line)
+            
+    if inferredconnectiontypes==[]:
+        for herraje in modeledconnectiontypes:
+            if parentid==herraje['parentjoint_id']:
+                finalconnectiontypes.append(herraje)
+        
+    
+    recuentodeconnectiontypes=[]
+            
+    for connectiontype in inferredconnectiontypes:
+        if connectiontype['is_modeled'][0]=='Yes':
+            if connectiontype['parentjoint_id'] not in listadeparentsconalgunherrajemodelado:
+                finalconnectiontypes.append(connectiontype)
+            for herraje in modeledconnectiontypes:
+                if herraje['parentjoint_id']==connectiontype['parentjoint_id'] and herraje['connection_type']==connectiontype['connection_type']:
+                #si coinciden el parent y el connection type
+                    if herraje['connection_type'] not in recuentodeconnectiontypes:
+                        newconnectiontype=connectiontype.copy()
+                        newconnectiontype['Calculation Formula']='Fix value' 
+                        newconnectiontype['Performance']=herraje['Performance']  
+                        newconnectiontype['is_modeled']='modeled' 
+                        recuentodeconnectiontypes.append(herraje['connection_type'])
+                        finalconnectiontypes.append(newconnectiontype)
+                if herraje['parentjoint_id']==connectiontype['parentjoint_id'] and herraje['connection_type']!=connectiontype['connection_type']:
+                #si coinciden el parent y pero el connectiontype es diferente    
+                    if herraje['connection_type'] not in recuentodeconnectiontypes:
+                        newconnectiontype={}
+                        newconnectiontype['Calculation Formula']='Fix value' 
+                        newconnectiontype['Performance']=herraje['Performance'] 
+                        newconnectiontype['connection_type']=herraje['connection_type']
+                        newconnectiontype['connectiongroup_type_id']='' 
+                        newconnectiontype['is_modeled']='modeled' 
+                        newconnectiontype['parentjoint_id']=herraje['parentjoint_id']
+                        recuentodeconnectiontypes.append(herraje['connection_type'])
+                        finalconnectiontypes.append(newconnectiontype)
+                
+                    
+        if connectiontype['is_modeled'][0]=='No':
+            finalconnectiontypes.append(connectiontype)
+                        
+    connectiongroup_cost = 0
+    for connectiontype in finalconnectiontypes:
+        connectiontype_id=connectiontype['connection_type']
+        connectiontype_calcform=connectiontype['Calculation Formula']
+        connectiontype_performance=connectiontype['Performance']          
+        allclayers=airtable_clayers
+        filteredclayers=[]
+        
+        for i in allclayers:
+            if connectiontype_id in i['connection_type_code']:
+                i['parentjoint_id']=parentid
+                filteredclayers.append(i)
+                
+        for clayer in filteredclayers:
+            material_performance=clayer['Performance']
+            material_formula=clayer['Calculation Formula']
+            material_sku=clayer['material_id']
+            material_cost=clayer.get('Current_material_cost',[0])[0]
+            material_unit=clayer['Units'][0]                     
+            
+            if material_formula=='Fix value':
+                if material_unit=='U':
+                    if connectiontype_calcform=='Length * performance':
+                        quantity=math.ceil(material_performance*connectiontype_performance*long)
+                        connectiongroup_cost=connectiongroup_cost+material_cost*quantity
+                        clayer['quantity']=quantity
+                        clayer['layer_cost']=material_cost*quantity
+                    elif connectiontype_calcform=='Opening * performance':
+                        quantity=material_performance*connectiontype_performance*openings
+                        connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
+                        clayer['quantity']=quantity
+                        clayer['layer_cost']=material_cost*quantity                        
+                    else:
+                        quantity=material_performance*connectiontype_performance
+                        connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
+                        clayer['quantity']=quantity
+                        clayer['layer_cost']=material_cost*quantity
+                else:
+                    if connectiontype_calcform=='Length * performance':
+                        quantity=material_performance*connectiontype_performance*long
+                        connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
+                        clayer['quantity']=quantity
+                        clayer['layer_cost']=material_cost*quantity
+                    elif connectiontype_calcform=='Opening * performance':
+                        quantity=material_performance*connectiontype_performance*openings
+                        connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
+                        clayer['quantity']=quantity
+                        clayer['layer_cost']=material_cost*quantity
+                    else:
+                        quantity=material_performance*connectiontype_performance
+                        connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
+                        clayer['quantity']=quantity
+                        clayer['layer_cost']=material_cost*quantity
+            inferredandmodeledclayers.append(clayer)        
+            
+    return connectiongroup_cost, inferredandmodeledclayers        
+        
+        
+        
+    
+        
+        
+        

@@ -2,23 +2,41 @@
 #Input necesario: Ruta del IFC
 #Output: Excel en la misma ubicación con el mismo nombre
 
-from classes.funciones import getboxesfilteredwithbalconies, ruta_corrector, boqfromlistofparents,guardarxlsfromIFC, leer_archivo_xlsx, boqfromlistofparentsJ3, guardarxlsfromxls
+from classes.funciones import getboxesfilteredwithbalconies, ruta_corrector,guardarxlsfromIFC, leer_archivo_xlsx, boqfromlistofparentsJ3, guardarxlsfromxls,getmodeledconnections
+
+connectionmodeledmaterials=[]
 
 input_usuario=input("""Elige una opción:
-    a) Leer un IFC y exportar excel con BOQ (Joints 2)
+    a) Leer un IFC y exportar excel con BOQ
     b) Generar un BOQ a partir de un excel con los Parent Joints
     """)
 
 if input_usuario=='a':    
     print('Has elegido la opción "a"')
     ruta=input(r'Introduce la ruta del archivo IFC: ')
+    inputcalculoconexion=input("""Indícame qué situación hay en el proyecto:
+        a) No hay herrajes modelados
+        b) Hay herrajes modelados. No tienen los parent informados
+        c) Hay herrajes modelados y tienen asignados los parent correctamente
+                               """)
+    
+    if inputcalculoconexion == 'a':
+        print('Se reportarán los datos inferidos en las cajas')
+    elif inputcalculoconexion=='b':
+        print('Se comprobará para cada parent si tiene herrajes modelados. Si hay algo modelado será reportado junto con lo inferido que tenga tipificado "is_modeled=No"')
+    elif inputcalculoconexion=='c':
+        print("""De las cajas únicamente se reportará todo lo que esté marcado como "is_modeled=No".
+La pestaña "Parentwithcost" no mostrará el coste correcto. Revisar coste en Listamateriales y Listaherrajes""")
+    else:
+        print('No has elegido una opción válida. Por favor, elige a, b ó c.')
+    
     print('Generando info...')
 
     ruta_modificada=ruta_corrector(ruta)
 
-    parentsfromifc=getboxesfilteredwithbalconies(ruta)
+    parentsfromifc,herrajesmodelados=getboxesfilteredwithbalconies(ruta)
 
-    coste,matjoints,herrajes=boqfromlistofparents(parentsfromifc)
+    coste,matjoints,herrajes=boqfromlistofparentsJ3(parentsfromifc,herrajesmodelados,inputcalculoconexion)
 
     guardarxlsfromIFC(coste,matjoints,herrajes,ruta_modificada)
     
@@ -30,11 +48,17 @@ if input_usuario=='b':
         
         """)   
     ruta=input(r'Pásame por favor la ruta del archivo excel: ')
+    rutaIFC=input(r'Ahora pásame por favor la ruta del archivo IFC para ver si tiene herrajes modelados: ')
     print('Editando archivo...')
     ruta_modificada=ruta_corrector(ruta)
+    rutaIFC_correcta=ruta_corrector(rutaIFC)
     listaparents=leer_archivo_xlsx(ruta_modificada)
 
-    listaconcoste,listamateriales,listadeherrajes=boqfromlistofparentsJ3(listaparents)
+    
+
+    herrajesmodelados=getmodeledconnections(rutaIFC_correcta)
+
+    listaconcoste,listamateriales,listadeherrajes=boqfromlistofparentsJ3(listaparents,herrajesmodelados)
 
     guardarxlsfromxls(listaconcoste,listamateriales,listadeherrajes,ruta_modificada)
     

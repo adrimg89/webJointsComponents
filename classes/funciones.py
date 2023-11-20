@@ -775,6 +775,80 @@ def getmodeledconnections(ruta):
     return listconnectiontypesmodelados
 
 
+#-------------------------------------------------------------------------- Funciones de exportación de las cajas a excel
+
+def export_excel_infoallboxes(rutaifc):
+    
+    datos_export=boxes_info_joint(rutaifc)
+            
+    # Obtener el nombre del archivo IFC sin la extensión
+    nombre_archivo_ifc = os.path.splitext(os.path.basename(rutaifc))[0]
+    
+    # Crear un DataFrame de pandas con los resultados
+    df = pd.DataFrame(datos_export)
+    
+    # Obtener la ruta del directorio donde se encuentra el archivo IFC
+    directorio_ifc = os.path.dirname(rutaifc)
+    
+    # Generar el nombre del archivo Excel con el sufijo "allboxes"
+    excel_file_name = f"{nombre_archivo_ifc}_allboxes.xlsx"
+    
+    # Combinar la ruta del directorio del archivo IFC con el nombre del archivo Excel
+    excel_file_path = os.path.join(directorio_ifc, excel_file_name)
+    
+    # Exportar el DataFrame a un archivo de Excel en la misma ruta que el archivo IFC
+    df.to_excel(excel_file_path, index=False)  
+    
+    print(f"Resultados exportados a {excel_file_name} en la ruta: {directorio_ifc}")
+    
+def export_excel_infofilteredboxes(rutaifc):
+    
+    datos_export=get_boxesfilteredbyPJ(rutaifc)
+            
+    
+    # Obtener el nombre del archivo IFC sin la extensión
+    nombre_archivo_ifc = os.path.splitext(os.path.basename(rutaifc))[0]
+    
+    # Crear un DataFrame de pandas con los resultados
+    df = pd.DataFrame(datos_export)
+    
+    # Obtener la ruta del directorio donde se encuentra el archivo IFC
+    directorio_ifc = os.path.dirname(rutaifc)
+    
+    # Generar el nombre del archivo Excel con el sufijo 'filteredboxes'
+    excel_file_name = f"{nombre_archivo_ifc}_filteredboxes.xlsx"
+    
+    # Combinar la ruta del directorio del archivo IFC con el nombre del archivo Excel
+    excel_file_path = os.path.join(directorio_ifc, excel_file_name)
+    
+    # Exportar el DataFrame a un archivo de Excel en la misma ruta que el archivo IFC
+    df.to_excel(excel_file_path, index=False)  
+    
+    print(f"Resultados exportados a {excel_file_name} en la ruta: {directorio_ifc}")
+
+def export2excel(ruta):
+    boxesinfo, herrajesmodelados = getboxesfilteredwithbalconies(ruta)
+    
+    # Obtener el nombre del archivo IFC sin la extensión
+    nombre_archivo = os.path.splitext(os.path.basename(ruta))[0]
+    
+    # Crear un DataFrame de pandas con los resultados
+    df = pd.DataFrame(boxesinfo)
+    
+    # Obtener la ruta del directorio donde se encuentra el archivo IFC
+    directorio_ifc = os.path.dirname(ruta)
+    
+    # Generar el nombre del archivo Excel con el sufijo 'filteredboxesandnrbalconies'
+    excel_file_name = f"{nombre_archivo}_filteredboxesandnrbalconies.xlsx"
+    
+    # Combinar la ruta del directorio del archivo IFC con el nombre del archivo Excel
+    ruta_excel = os.path.join(directorio_ifc, excel_file_name)
+    
+    # Exportar el DataFrame a un archivo de Excel en la misma ruta que el archivo IFC
+    df.to_excel(ruta_excel, index=False)
+    
+    print(f'Exportación a {excel_file_name} completada en la ruta: {directorio_ifc}')
+
 #--------------------------------------------------------------------------- Funciones búsqueda datos para generar BOQ Joints y Connections
 
 import requests
@@ -1471,120 +1545,120 @@ def guardarxlsfromxls(listaconcoste, listamateriales, listaherrajes, ruta_excel)
 #-------------------------------------------------------------------------------------------------------------
 
 # def WIP_inferredandmodeled_advanced_connectiongroup_costcalculator(parentid,connectiongroup_type, long, openings, airtable_rlcgctype_data, airtable_clayers,herrajesmodelados): 
-    inferredconnectiontypes=[]
-    modeledconnectiontypes=herrajesmodelados
-    finalconnectiontypes=[]
+    # inferredconnectiontypes=[]
+    # modeledconnectiontypes=herrajesmodelados
+    # finalconnectiontypes=[]
     
-    inferredandmodeledclayers=[]
+    # inferredandmodeledclayers=[]
 
-    listadeparentsconalgunherrajemodelado=[]
+    # listadeparentsconalgunherrajemodelado=[]
     
-    for i in modeledconnectiontypes:
-        if i['parentjoint_id'] not in listadeparentsconalgunherrajemodelado:
-            listadeparentsconalgunherrajemodelado.append(i['parentjoint_id'])
+    # for i in modeledconnectiontypes:
+    #     if i['parentjoint_id'] not in listadeparentsconalgunherrajemodelado:
+    #         listadeparentsconalgunherrajemodelado.append(i['parentjoint_id'])
         
     
-    for line in airtable_rlcgctype_data:
+    # for line in airtable_rlcgctype_data:
         
-        if connectiongroup_type in line['connectiongroup_type_id'] and connectiongroup_type!='':
-            line['parentjoint_id']=parentid                  
-            inferredconnectiontypes.append(line)
+    #     if connectiongroup_type in line['connectiongroup_type_id'] and connectiongroup_type!='':
+    #         line['parentjoint_id']=parentid                  
+    #         inferredconnectiontypes.append(line)
             
-    if inferredconnectiontypes==[]:
-        for herraje in modeledconnectiontypes:
-            if parentid==herraje['parentjoint_id']:
-                finalconnectiontypes.append(herraje)
+    # if inferredconnectiontypes==[]:
+    #     for herraje in modeledconnectiontypes:
+    #         if parentid==herraje['parentjoint_id']:
+    #             finalconnectiontypes.append(herraje)
         
     
-    recuentodeconnectiontypes=[]
+    # recuentodeconnectiontypes=[]
             
-    for connectiontype in inferredconnectiontypes:
-        if connectiontype['is_modeled'][0]=='Yes':
-            if connectiontype['parentjoint_id'] not in listadeparentsconalgunherrajemodelado:
-                finalconnectiontypes.append(connectiontype)
-            for herraje in modeledconnectiontypes:
-                if herraje['parentjoint_id']==connectiontype['parentjoint_id'] and herraje['connection_type']==connectiontype['connection_type']:
-                #si coinciden el parent y el connection type
-                    if herraje['connection_type'] not in recuentodeconnectiontypes:
-                        newconnectiontype=connectiontype.copy()
-                        newconnectiontype['Calculation Formula']='Fix value' 
-                        newconnectiontype['Performance']=herraje['Performance']  
-                        newconnectiontype['is_modeled']='modeled' 
-                        recuentodeconnectiontypes.append(herraje['connection_type'])
-                        finalconnectiontypes.append(newconnectiontype)
-                if herraje['parentjoint_id']==connectiontype['parentjoint_id'] and herraje['connection_type']!=connectiontype['connection_type']:
-                #si coinciden el parent y pero el connectiontype es diferente    
-                    if herraje['connection_type'] not in recuentodeconnectiontypes:
-                        newconnectiontype={}
-                        newconnectiontype['Calculation Formula']='Fix value' 
-                        newconnectiontype['Performance']=herraje['Performance'] 
-                        newconnectiontype['connection_type']=herraje['connection_type']
-                        newconnectiontype['connectiongroup_type_id']='' 
-                        newconnectiontype['is_modeled']='modeled' 
-                        newconnectiontype['parentjoint_id']=herraje['parentjoint_id']
-                        recuentodeconnectiontypes.append(herraje['connection_type'])
-                        finalconnectiontypes.append(newconnectiontype)
+    # for connectiontype in inferredconnectiontypes:
+    #     if connectiontype['is_modeled'][0]=='Yes':
+    #         if connectiontype['parentjoint_id'] not in listadeparentsconalgunherrajemodelado:
+    #             finalconnectiontypes.append(connectiontype)
+    #         for herraje in modeledconnectiontypes:
+    #             if herraje['parentjoint_id']==connectiontype['parentjoint_id'] and herraje['connection_type']==connectiontype['connection_type']:
+    #             #si coinciden el parent y el connection type
+    #                 if herraje['connection_type'] not in recuentodeconnectiontypes:
+    #                     newconnectiontype=connectiontype.copy()
+    #                     newconnectiontype['Calculation Formula']='Fix value' 
+    #                     newconnectiontype['Performance']=herraje['Performance']  
+    #                     newconnectiontype['is_modeled']='modeled' 
+    #                     recuentodeconnectiontypes.append(herraje['connection_type'])
+    #                     finalconnectiontypes.append(newconnectiontype)
+    #             if herraje['parentjoint_id']==connectiontype['parentjoint_id'] and herraje['connection_type']!=connectiontype['connection_type']:
+    #             #si coinciden el parent y pero el connectiontype es diferente    
+    #                 if herraje['connection_type'] not in recuentodeconnectiontypes:
+    #                     newconnectiontype={}
+    #                     newconnectiontype['Calculation Formula']='Fix value' 
+    #                     newconnectiontype['Performance']=herraje['Performance'] 
+    #                     newconnectiontype['connection_type']=herraje['connection_type']
+    #                     newconnectiontype['connectiongroup_type_id']='' 
+    #                     newconnectiontype['is_modeled']='modeled' 
+    #                     newconnectiontype['parentjoint_id']=herraje['parentjoint_id']
+    #                     recuentodeconnectiontypes.append(herraje['connection_type'])
+    #                     finalconnectiontypes.append(newconnectiontype)
                 
                     
-        if connectiontype['is_modeled'][0]=='No':
-            finalconnectiontypes.append(connectiontype)
+    #     if connectiontype['is_modeled'][0]=='No':
+    #         finalconnectiontypes.append(connectiontype)
                         
-    connectiongroup_cost = 0
-    for connectiontype in finalconnectiontypes:
-        connectiontype_id=connectiontype['connection_type']
-        connectiontype_calcform=connectiontype['Calculation Formula']
-        connectiontype_performance=connectiontype['Performance']          
-        allclayers=airtable_clayers
-        filteredclayers=[]
+    # connectiongroup_cost = 0
+    # for connectiontype in finalconnectiontypes:
+    #     connectiontype_id=connectiontype['connection_type']
+    #     connectiontype_calcform=connectiontype['Calculation Formula']
+    #     connectiontype_performance=connectiontype['Performance']          
+    #     allclayers=airtable_clayers
+    #     filteredclayers=[]
         
-        for i in allclayers:
-            if connectiontype_id in i['connection_type_code']:
-                i['parentjoint_id']=parentid
-                filteredclayers.append(i)
+    #     for i in allclayers:
+    #         if connectiontype_id in i['connection_type_code']:
+    #             i['parentjoint_id']=parentid
+    #             filteredclayers.append(i)
                 
-        for clayer in filteredclayers:
-            material_performance=clayer['Performance']
-            material_formula=clayer['Calculation Formula']
-            material_sku=clayer['material_id']
-            material_cost=clayer.get('Current_material_cost',[0])[0]
-            material_unit=clayer['Units'][0]                     
+    #     for clayer in filteredclayers:
+    #         material_performance=clayer['Performance']
+    #         material_formula=clayer['Calculation Formula']
+    #         material_sku=clayer['material_id']
+    #         material_cost=clayer.get('Current_material_cost',[0])[0]
+    #         material_unit=clayer['Units'][0]                     
             
-            if material_formula=='Fix value':
-                if material_unit=='U':
-                    if connectiontype_calcform=='Length * performance':
-                        quantity=math.ceil(material_performance*connectiontype_performance*long)
-                        connectiongroup_cost=connectiongroup_cost+material_cost*quantity
-                        clayer['quantity']=quantity
-                        clayer['layer_cost']=material_cost*quantity
-                    elif connectiontype_calcform=='Opening * performance':
-                        quantity=material_performance*connectiontype_performance*openings
-                        connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
-                        clayer['quantity']=quantity
-                        clayer['layer_cost']=material_cost*quantity                        
-                    else:
-                        quantity=material_performance*connectiontype_performance
-                        connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
-                        clayer['quantity']=quantity
-                        clayer['layer_cost']=material_cost*quantity
-                else:
-                    if connectiontype_calcform=='Length * performance':
-                        quantity=material_performance*connectiontype_performance*long
-                        connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
-                        clayer['quantity']=quantity
-                        clayer['layer_cost']=material_cost*quantity
-                    elif connectiontype_calcform=='Opening * performance':
-                        quantity=material_performance*connectiontype_performance*openings
-                        connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
-                        clayer['quantity']=quantity
-                        clayer['layer_cost']=material_cost*quantity
-                    else:
-                        quantity=material_performance*connectiontype_performance
-                        connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
-                        clayer['quantity']=quantity
-                        clayer['layer_cost']=material_cost*quantity
-            inferredandmodeledclayers.append(clayer)        
+    #         if material_formula=='Fix value':
+    #             if material_unit=='U':
+    #                 if connectiontype_calcform=='Length * performance':
+    #                     quantity=math.ceil(material_performance*connectiontype_performance*long)
+    #                     connectiongroup_cost=connectiongroup_cost+material_cost*quantity
+    #                     clayer['quantity']=quantity
+    #                     clayer['layer_cost']=material_cost*quantity
+    #                 elif connectiontype_calcform=='Opening * performance':
+    #                     quantity=material_performance*connectiontype_performance*openings
+    #                     connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
+    #                     clayer['quantity']=quantity
+    #                     clayer['layer_cost']=material_cost*quantity                        
+    #                 else:
+    #                     quantity=material_performance*connectiontype_performance
+    #                     connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
+    #                     clayer['quantity']=quantity
+    #                     clayer['layer_cost']=material_cost*quantity
+    #             else:
+    #                 if connectiontype_calcform=='Length * performance':
+    #                     quantity=material_performance*connectiontype_performance*long
+    #                     connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
+    #                     clayer['quantity']=quantity
+    #                     clayer['layer_cost']=material_cost*quantity
+    #                 elif connectiontype_calcform=='Opening * performance':
+    #                     quantity=material_performance*connectiontype_performance*openings
+    #                     connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
+    #                     clayer['quantity']=quantity
+    #                     clayer['layer_cost']=material_cost*quantity
+    #                 else:
+    #                     quantity=material_performance*connectiontype_performance
+    #                     connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
+    #                     clayer['quantity']=quantity
+    #                     clayer['layer_cost']=material_cost*quantity
+    #         inferredandmodeledclayers.append(clayer)        
             
-    return connectiongroup_cost, inferredandmodeledclayers        
+    # return connectiongroup_cost, inferredandmodeledclayers        
         
         
         

@@ -583,15 +583,15 @@ def boxes_info_joint(ruta):
         cgt=JS_Joint_Specification.get('JS_ConnectionGroupTypeID', '')
         parent_joint_id = JS_Joint_Specification.get('JS_ParentJointInstanceID', '')
         r_guid = i_psets['EI_Interoperability'].get('RevitGUID', '')
-        QU_Length=QU_Quantity.get('QU_Length_m', '')
+        QU_Length=QU_Quantity.get('QU_Length_m', 0)
         Box_type=Pset_QuantityTakeOff.get('Reference', '')
         inst_a=JS_Joint_Specification.get('JS_C01_ID', '')
         inst_b=JS_Joint_Specification.get('JS_C02_ID', '')
-        corematgroup=JS_Joint_Specification.get('Corematgroup','')
-        Q1matgroup=JS_Joint_Specification.get('Q1matgroup','')
-        Q2matgroup=JS_Joint_Specification.get('Q2matgroup','')
-        Q3matgroup=JS_Joint_Specification.get('Q3matgroup','')
-        Q4matgroup=JS_Joint_Specification.get('Q4matgroup','')
+        corematgroup=JS_Joint_Specification.get('JS_CORE_matgroup','')
+        Q1matgroup=JS_Joint_Specification.get('JS_Q1_matgroup','')
+        Q2matgroup=JS_Joint_Specification.get('JS_Q2_matgroup','')
+        Q3matgroup=JS_Joint_Specification.get('JS_Q3_matgroup','')
+        Q4matgroup=JS_Joint_Specification.get('JS_Q4_matgroup','')
         parameters_info={'RevitGUID':r_guid, 'JS_ParentJointInstanceID':parent_joint_id, 'JS_JointTypeID':JointTypeID, 'JS_ConnectionGroupTypeID':cgt, 'Core Matgroup':corematgroup,'Q1 Matgroup':Q1matgroup, 'Q2 Matgroup':Q2matgroup,'Q3 Matgroup':Q3matgroup,'Q4 Matgroup':Q4matgroup,'QU_Length_m':QU_Length, 'Box_type':Box_type, 'JS_C01_ID':inst_a, 'JS_C02_ID':inst_b}
         boxes_info.append(parameters_info)
     
@@ -1255,9 +1255,10 @@ def realmodeledconnections_costcalculator(herrajesmodelados, airtable_clayers):
         filteredclayers=[]
         
         for i in allclayers:
-            if connectiontype_id in i['connection_type_code']:
-                i['parentjoint_id']=connectiontype.get('parentjoint_id','NoParentAssociated')
-                filteredclayers.append(i)
+            if connectiontype_id == i['connection_type_code'] and connectiontype_id!='':
+                new_layer=i.copy()
+                new_layer['parentjoint_id']=connectiontype.get('parentjoint_id','NoParentAssociated')
+                filteredclayers.append(new_layer)
                 
         for clayer in filteredclayers:
             material_performance=clayer['Performance']

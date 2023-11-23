@@ -115,6 +115,12 @@ def getlgs(eu_code):
     listalgs=getLayerGroups(eu_code)
     return render_template("html/lgs.html", listalgs=listalgs, eu_code=eu_code)
 
+#Llamada a database rt_buildplatf para mostrar execution units del componente introducido
+@app.route("/BOQ")
+@login_required
+def boq():    
+    return render_template("html/boq.html")
+
 @app.route("/logout")
 @login_required
 def logout():

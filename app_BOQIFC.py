@@ -4,7 +4,7 @@
 
 from classes.funciones import getboxesfilteredwithbalconies, ruta_corrector,guardarxlsfromIFC, leer_archivo_xlsx, boqfromlistofparentsJ3, guardarxlsfromxls,export2excel,export_excel_infoallboxes,export_excel_infofilteredboxes
 
-connectionmodeledmaterials=[]
+
 
 input_usuario=input("""Elige una opción:
     a) Leer un IFC y exportar excel con BOQ

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Selección de Opciones</title>
+    <link rel="stylesheet" href="templates/css/boq.css">
+    <script>
+        function seleccionarOpcion(opcion) {
+            document.getElementById('opcion_seleccionada').value = opcion;
+        }
+    </script>
+    <style>
+        /* Aquí puedes incluir tus estilos CSS si lo deseas */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Aplicación para Generar Costes y BOQ</h1>
+        <div>
+            <p>Elige una opción:</p>
+            <ul>
+                <li><a href="#" onclick="seleccionarOpcion('a')">Leer un IFC y exportar excel con BOQ</a></li>
+                <li><a href="#" onclick="seleccionarOpcion('b')">Generar un BOQ a partir de un excel con los Parent Joints</a></li>
+                <li><a href="#" onclick="seleccionarOpcion('c')">Sólo extraer datos de las cajas de un IFC</a></li>
+            </ul>
+        </div>        
+    </div>
+</body>
+</html>
+
+

@@ -1453,8 +1453,9 @@ def boqfromlistofparentsJ3(parents,herrajesmodelados,inputcalculoconexion):
         listaconcoste.append(parent)
         for material in materiales:
             if material['api_id']!='':
+                new_material=material.copy()
                 # material['parentjoint_id']=parent['JS_ParentJointInstanceID']
-                listamateriales.append(material)
+                listamateriales.append(new_material)
         for herraje in herrajes:
             # Crea una copia independiente de 'herraje'
             nuevo_herraje = herraje.copy()

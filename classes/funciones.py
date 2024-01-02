@@ -1439,10 +1439,15 @@ def boqfromlistofparentsJ3(parents,herrajesmodelados,inputcalculoconexion):
     
     if inputcalculoconexion=='c':
         connection_modeled_materials=realmodeledconnections_costcalculator(herrajesmodelados,airtable_clayers)
-        for i in connection_modeled_materials:
-            i['cgtype_id']=''
-            listadeherrajes.append(i)
-        
+        for connection in connection_modeled_materials:
+            if connection['parentjoint_id']=='':
+                connection['cgtype_id']=''
+                listadeherrajes.append(connection)
+            else:
+                for parent in parents:
+                    if connection['parentjoint_id'] == parent['JS_ParentJointInstanceID']:
+                        connection['cgtype_id']=parent['JS_ConnectionGroupTypeID']
+                        listadeherrajes.append(connection)
     
     for parent in parents:
         coste_parent, materiales, herrajes, corematerials,Q1materials,Q2materials,Q3materials,Q4materials=costeunionJ3(parent['JS_ParentJointInstanceID'],parent['JS_JointTypeID'],parent['JS_ConnectionGroupTypeID'],parent['Core Matgroup'],parent['Q1 Matgroup'],parent['Q2 Matgroup'],parent['Q3 Matgroup'],parent['Q4 Matgroup'],parent['QU_Length_m'],parent['nrbalconies'],airtable_rlcgctype_data, airtable_clayers, airtable_jlayers,airtable_matgrouplayers,herrajesmodelados,inputcalculoconexion)

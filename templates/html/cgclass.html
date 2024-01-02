@@ -5,6 +5,15 @@
     <link rel="stylesheet" href="/templates/css/cgclass.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="templates/js/components.js"></script>
+    <style>
+        /* Estilos CSS para las imágenes */
+        .thumbnail-img {
+            width: 100%; /* Establecer el tamaño al 150% */
+            height: auto; /* Permitir que la altura se ajuste automáticamente */
+            display: block; /* Evitar espacios no deseados debajo de la imagen */
+            margin: 0 auto; /* Centrar la imagen horizontalmente dentro del contenedor */
+        }
+    </style>
 </head>
 <body>
     <h1>ConnectionGroup Class</h1>
@@ -14,6 +23,7 @@
             <th>Description</th>
             <th>Box type</th>
             <th>Planilla</th>
+            <th>Imagen</th>
         </tr> 
       
         <tbody>
@@ -23,7 +33,13 @@
                     <td>{{ record.Description_CGClass }}</td>
                     <td>{{ record.box_type[0] }}</td>
                     <td>{% if record.planilla != None %}
-                        <a href="{{ record.planilla }}" class="button">{{ "Planilla PDF" }}</a>
+                        <a href="{{ record.planilla }}" class="button" target="_blank">{{ "Ver detalle" }}</a>
+                      {% endif %}
+                    </td>
+                    <td>{% if record.pic %}
+                        <div class="thumbnail-container">
+                            <img src="{{ record.pic }}" alt="Thumbnail" class="thumbnail-img">
+                        </div> 
                       {% endif %}
                     </td>
                 </tr>

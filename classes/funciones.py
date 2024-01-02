@@ -348,13 +348,16 @@ def getcgclass():
                     Description_CGClass = fields.get('Description_CGClass')
                     planilla = fields.get('Planilla PDF')
                     box_type = fields.get('box_type (from boxtype_id)')
+                    miniatura = fields.get('Miniatura_2')
+                    miniatura_url=miniatura[0].get('url')
                                  
                     # Agregar el valor a records_list
                     records_list.append({
                         'connectiongroup_class': connectiongroup_class,
                         'Description_CGClass': Description_CGClass,
                         'planilla': planilla,  
-                        'box_type': box_type,                                           
+                        'box_type': box_type,
+                        'pic':miniatura_url,                                           
                     })
                     
                     #print(records_list)
@@ -383,7 +386,7 @@ def getcgtype(cgclass):
     headers=configure_headers()
     
     params = {
-        'filterByFormula': "SEARCH('"+cgclass+"', {api_ConnectionGroup_Class})",
+        'filterByFormula': "{api_ConnectionGroup_Class} = '" + cgclass + "'",
         'pageSize': 100,  # Tamaño máximo de una página (ajústalo según tus necesidades)
     }
     
@@ -581,10 +584,12 @@ def boxes_info_joint(ruta):
         Pset_QuantityTakeOff=i_psets.get('Pset_QuantityTakeOff',{})
         JointTypeID = JS_Joint_Specification.get('JS_JointTypeID', '')
         cgt=JS_Joint_Specification.get('JS_ConnectionGroupTypeID', '')
+        cgc=JS_Joint_Specification.get('JS_ConnectionGroupClass','')
         parent_joint_id = JS_Joint_Specification.get('JS_ParentJointInstanceID', '')
         r_guid = i_psets['EI_Interoperability'].get('RevitGUID', '')
         QU_Length=QU_Quantity.get('QU_Length_m', 0)
         Box_type=Pset_QuantityTakeOff.get('Reference', '')
+        joint_type=JS_Joint_Specification.get('JS_JointType','')
         inst_a=JS_Joint_Specification.get('JS_C01_ID', '')
         inst_b=JS_Joint_Specification.get('JS_C02_ID', '')
         corematgroup=JS_Joint_Specification.get('JS_CORE_matgroup','')
@@ -592,7 +597,7 @@ def boxes_info_joint(ruta):
         Q2matgroup=JS_Joint_Specification.get('JS_Q2_matgroup','')
         Q3matgroup=JS_Joint_Specification.get('JS_Q3_matgroup','')
         Q4matgroup=JS_Joint_Specification.get('JS_Q4_matgroup','')
-        parameters_info={'RevitGUID':r_guid, 'JS_ParentJointInstanceID':parent_joint_id, 'JS_JointTypeID':JointTypeID, 'JS_ConnectionGroupTypeID':cgt, 'Core Matgroup':corematgroup,'Q1 Matgroup':Q1matgroup, 'Q2 Matgroup':Q2matgroup,'Q3 Matgroup':Q3matgroup,'Q4 Matgroup':Q4matgroup,'QU_Length_m':QU_Length, 'Box_type':Box_type, 'JS_C01_ID':inst_a, 'JS_C02_ID':inst_b}
+        parameters_info={'RevitGUID':r_guid, 'JS_ParentJointInstanceID':parent_joint_id, 'JS_JointTypeID':JointTypeID, 'JS_ConnectionGroupTypeID':cgt, 'Core Matgroup':corematgroup,'Q1 Matgroup':Q1matgroup, 'Q2 Matgroup':Q2matgroup,'Q3 Matgroup':Q3matgroup,'Q4 Matgroup':Q4matgroup,'QU_Length_m':QU_Length, 'Box_type':Box_type, 'JS_JointType':joint_type, 'JS_ConnectionGroupClass':cgc, 'JS_C01_ID':inst_a, 'JS_C02_ID':inst_b}
         boxes_info.append(parameters_info)
     
     return boxes_info
@@ -1048,7 +1053,9 @@ def inferredandmodeled_advanced_connectiongroup_costcalculator(parentid,connecti
     
     for line in airtable_rlcgctype_data:
         
-        if connectiongroup_type in line['connectiongroup_type_id'] and connectiongroup_type!='':
+        congroup=line.get('connectiongroup_type_id','')
+        
+        if connectiongroup_type in congroup and connectiongroup_type:
             line['parentjoint_id']=parentid                  
             inferredconnectiontypes.append(line)
             
@@ -1236,17 +1243,7 @@ def inferrednotmodeled_connectiongroup_costcalculator(parentid,connectiongroup_t
 def realmodeledconnections_costcalculator(herrajesmodelados, airtable_clayers):
     realmodeled_clayers=[]
     connectiontypes=herrajesmodelados
-    # for herraje in herrajesmodelados:
-    #     connectiontype={}
-    #     connectiontype['Calculation Formula']='Fix value'
-    #     connectiontype['Performance']=herraje['Performance']
-    #     connectiontype['connection_type']=herraje['connection_type']
-    #     connectiontype['connectiongroup_type_id']=''
-    #     connectiontype['is_modeled']=''
-    #     connectiontype['parentjoint_id']='NoParentAssociated'
-    #     if connectiontype['connection_type']!='':
-    #         connectiontypes.append(connectiontype)
-    
+        
     for connectiontype in connectiontypes:
         connectiontype_id=connectiontype['connection_type']
         connectiontype_calcform=connectiontype['Calculation Formula']
@@ -1463,6 +1460,7 @@ def boqfromlistofparentsJ3(parents,herrajesmodelados,inputcalculoconexion):
             # Agrega los parámetros adicionales
             # nuevo_herraje['parentjoint_id'] = parent['JS_ParentJointInstanceID']
             nuevo_herraje['cgtype_id'] = parent['JS_ConnectionGroupTypeID']
+            nuevo_herraje['cgclass_id'] = parent['JS_ConnectionGroupClass']
             
             # Agrega la copia a la lista 'listadeherrajes'
             listadeherrajes.append(nuevo_herraje)

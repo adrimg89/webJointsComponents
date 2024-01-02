@@ -24,7 +24,7 @@ h1 {
 }
 
 table {
-    width: 50%;
+    width: 60%;
     border-collapse: collapse;
     background-color: #fff;
     margin-top: 0px;
@@ -64,6 +64,11 @@ td:nth-child(3) {
 
 th:nth-child(4),
 td:nth-child(4) {
+    width: 20%; /* Anchura para la segunda columna */
+}
+
+th:nth-child(5),
+td:nth-child(5) {
     width: 20%; /* Anchura para la segunda columna */
 }
 

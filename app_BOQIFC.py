@@ -18,7 +18,7 @@ if input_usuario=='a':
     inputcalculoconexion=input("""Indícame qué situación hay en el proyecto:
         a) No hay herrajes modelados
         b) Hay herrajes modelados y tienen asignados los parent correctamente. 
-        c) Hay herrajes modelados. No tienen los parent informados
+        c) Hay herrajes modelados. No todos los parent están bien informados
                                """)
     
     if inputcalculoconexion == 'a':

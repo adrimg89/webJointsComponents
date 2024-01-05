@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ConnectionGroup Type para joints H.ST_T&B</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/boxtype_hst_bottom.css') }}"> <!-- Ruta relativa al archivo style.css -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ url_for('static', filename='js/boxtype_hst_t&b.js') }}"></script> <!-- Ruta relativa al archivo main.js -->
+</head>
+<body>
+    <h1>ConnectionGroup Type para joints H.ST_T&B</h1>
+    <table>
+        <tr>
+            <th>ConnectionGroup Type
+                <select class="filter-select" data-column-index="0" id="filter-cgt"></select>
+            </th>            
+            <th>ConnectionGroup Class
+                <select class="filter-select" data-column-index="1" id="filter-cgclass"></select>
+            </th>
+            <th>Description</th>           
+            <th>Angle Cadence
+                <select class="filter-select" data-column-index="4" id="filter-anglecadence"></select>
+            </th>
+            <th>End HoldDown
+                <select class="filter-select" data-column-index="5" id="filter-endHD"></select>
+            </th>      
+            <th>Balcony Hold Down
+                <select class="filter-select" data-column-index="6" id="filter-balconyHD"></select>
+            </th>   
+            <th>Estimated €/m</th>             
+        </tr>
+        <!-- Aquí van tus registros en bucle -->
+        {% for record in tb %}
+        <tr>            
+            <td><a href="/ctype/{{ record.cgtype_id }}" class="button">{{ record.cgtype_id }}</a></td>                      
+            <td><a href="{{ record.planilla }}" class="button" target="_blank">{{ record.connectiongroup_class }}</a></td>
+            <td>{{ record.description }}</td>            
+            <td>{{ record.AngleCadence }}</td>
+            <td>{{ record.EndHD }}</td>
+            <td>{{ record.BalconyHD }}</td>
+            <td>{{ record.EstimatedCost }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <div style="position: absolute; top: 10px; right: 10px;">
+        <a href="{{ url_for('logout') }}" class="button">Logout</a>
+    </div>
+</body>
+</html>

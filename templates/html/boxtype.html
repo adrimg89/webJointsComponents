@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Selección de Opciones</title>
+    <link rel="stylesheet" href="templates/css/boxtype.css">
+    <script>
+        function seleccionarOpcion(opcion) {
+            document.getElementById('opcion_seleccionada').value = opcion;
+        }
+    </script>
+    <style>
+        /* Aquí puedes incluir tus estilos CSS si lo deseas */
+    </style>
+</head>
+<body>
+    <h1>Selecciona un tipo de Joint para mostrar las posibles conexiones</h1>
+    <div class="container">
+        
+        <div>
+            <p>Elige una opción:</p>
+            <ul>
+                <li><a href="/boxtype/V.ST" class="button">V.ST (Vertical estructural)</a></li>
+                <li><a href="/boxtype/TOP" class="button">H.ST_Top (Horizontal Estructural Top)</a></li>
+                <li><a href="/boxtype/SLAB" class="button">H.ST_Slab (Horizontal Estructural Slab)</a></li>
+                <li><a href="/boxtype/BOTTOM" class="button">H.ST_Bottom (Horizontal Estructural Bottom)</a></li>
+                <li><a href="/boxtype/TB" class="button">H.ST_T&B (Horizontal Estructural Top & Bottom)</a></li>
+                <li><a href="/boxtype/P.ST" class="button">P.ST (Puntual Estructural)</a></li>
+            </ul>
+        </div>        
+    </div>
+</body>
+</html>
+
+

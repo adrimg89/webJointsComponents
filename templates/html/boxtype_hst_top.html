@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ConnectionGroup Type para joints V.ST</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/boxtype_vst.css') }}"> <!-- Ruta relativa al archivo style.css -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ url_for('static', filename='js/boxtype_vst.js') }}"></script> <!-- Ruta relativa al archivo main.js -->
+</head>
+<body>
+    <h1>ConnectionGroup Type para joints H.ST_TOP</h1>
+    <table>
+        <tr>
+            <th>ConnectionGroup Type
+                <select class="filter-select" data-column-index="0" id="filter-cgt"></select>
+            </th>            
+            <th>ConnectionGroup Class
+                <select class="filter-select" data-column-index="1" id="filter-cgclass"></select>
+            </th>
+            <th>Description
+                <select class="filter-select" data-column-index="2" id="filter-desc"></select>
+            </th>
+            <th>Screw Long
+                <select class="filter-select" data-column-index="3" id="filter-screwlong"></select>
+            </th>
+            <th>Screw Cadence
+                <select class="filter-select" data-column-index="4" id="filter-screwcadence"></select>
+            </th> 
+            <th>Estimated €/m</th>                       
+        </tr>
+        <!-- Aquí van tus registros en bucle -->
+        {% for record in top %}
+        <tr>            
+            <td><a href="/ctype/{{ record.cgtype_id }}" class="button">{{ record.cgtype_id }}</a></td>                      
+            <td><a href="{{ record.planilla }}" class="button" target="_blank">{{ record.connectiongroup_class }}</a></td>
+            <td>{{ record.description }}</td>
+            <td>{{ record.ScrewLong }}</td>
+            <td>{{ record.ScrewCadence }}</td>
+            <td>{{ record.EstimatedCost }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <div style="position: absolute; top: 10px; right: 10px;">
+        <a href="{{ url_for('logout') }}" class="button">Logout</a>
+    </div>
+</body>
+</html>

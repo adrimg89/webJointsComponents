@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 
-from classes.funciones import get_joints, get_joint_layers, get_connectiontype, getcomp, getExecutionUnits, getLayerGroups, getcgclass, getcgtype, get_clayers
+from classes.funciones import get_joints, get_joint_layers, get_connectiontype, getcomp, getExecutionUnits, getLayerGroups, getcgclass, getcgtype, get_clayers, getcgtypefromboxtype
 
 from passwords import app_key
 
@@ -82,6 +82,47 @@ def web_cgclass():
     cgclass_list = getcgclass()
     return render_template("html/cgclass.html", cgclass_list=cgclass_list)
     #for i in getcgclass():print (i)
+
+#Llamada a airtable para mostrar box types
+@app.route("/boxtype")
+@login_required
+def boxtype():    
+    return render_template("html/boxtype.html")
+
+#Llamada a airtable para mostrar Conexiones V.ST
+@app.route("/boxtype/V.ST")
+@login_required
+def boxtype_vst():
+    vst=getcgtypefromboxtype('V.ST')    
+    return render_template("html/boxtype_vst.html", vst=vst)
+
+#Llamada a airtable para mostrar Conexiones H.ST_TOP
+@app.route("/boxtype/TOP")
+@login_required
+def boxtype_hst_top():
+    top=getcgtypefromboxtype('H.ST_Top')    
+    return render_template("html/boxtype_hst_top.html", top=top)
+
+#Llamada a airtable para mostrar Conexiones H.ST_Bottom
+@app.route("/boxtype/BOTTOM")
+@login_required
+def boxtype_hst_bottom():
+    bottom=getcgtypefromboxtype('H.ST_Bottom')    
+    return render_template("html/boxtype_hst_bottom.html", bottom=bottom)
+
+#Llamada a airtable para mostrar Conexiones H.ST_Slab
+@app.route("/boxtype/SLAB")
+@login_required
+def boxtype_hst_slab():
+    slab=getcgtypefromboxtype('H.ST_Slab')    
+    return render_template("html/boxtype_hst_slab.html", slab=slab)
+
+#Llamada a airtable para mostrar Conexiones H.ST_Slab
+@app.route("/boxtype/TB")
+@login_required
+def boxtype_hst_tb():
+    tb=getcgtypefromboxtype('H.ST_T&B')    
+    return render_template("html/boxtype_hst_t&b.html", tb=tb)
 
 #Llamada a airtable para mostrar connectiongroup type
 @app.route("/cgclass/<cgclass>")

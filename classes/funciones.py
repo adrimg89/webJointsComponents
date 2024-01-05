@@ -454,6 +454,116 @@ def getcgtype(cgclass):
 
     return records_list
 
+def getcgtypefromboxtype(boxtype):
+    # ------------------------------------------------
+    
+    airtable_rlcgctype_data=rl_cgtype_ctype()
+    airtable_clayers=connectionlayers()
+    
+    # ------------------------------------------------
+    url=airtable_url(cgtype_table)
+    headers=configure_headers()
+    
+    params = {
+        'filterByFormula': "FIND('"+boxtype+"', ARRAYJOIN({box_type (from boxtype_id)}))",
+        'pageSize': 100,  # Tamaño máximo de una página (ajústalo según tus necesidades)
+    }
+    
+    records_list = []  # Lista para almacenar los datos que se devolverán como respuesta
+
+    try:
+        offset = None
+        while True:
+            # Configurar el offset para obtener la siguiente página
+            if offset:
+                params['offset'] = offset
+
+            # Realizar una petición GET a la tabla de Airtable
+            response = requests.get(url, headers=headers, params=params)
+
+            # Verificar si la petición fue exitosa (código de estado 200)
+            if response.status_code == 200:
+                # Obtener los datos de la página actual en formato JSON
+                data = response.json()
+
+                # Acceder a los registros de la página actual
+                records = data['records']
+
+                # Si no hay más registros, salir del bucle
+                if not records:
+                    break
+
+                # Procesar los registros que cumplen la condición y agregarlos a records_list
+                for record in records:
+                    # Cada registro tiene un campo 'fields' con los datos reales
+                    fields = record['fields']
+
+                    # Obtener el valor de la columna 'joint_type_id'
+                    cgtype_id = fields.get('cgtype_id')
+                    boxtype=fields.get('box_type (from boxtype_id)','')
+                    connectiongroup_class = fields.get('api_ConnectionGroup_Class','')
+                    planilla = fields.get('Planilla PDF_shorturl','')[0]
+                    description = fields.get('Description','')
+                    screwlong = fields.get('param_screwlong','')
+                    screwcadence = fields.get('param_screwcadence','')
+                    anglecadence = fields.get('param_anglecadence','')
+                    angletype = fields.get('param_angletype','')
+                    endHD = fields.get('param_endHD','')
+                    balconyHD = fields.get('param_balconyHD')
+                    
+                    # ----------------------------------------------------------------------
+                    
+                    if 'H.ST_Bottom' in boxtype:
+                        long=6
+                        openings=1                        
+                    else:
+                        long=3
+                        openings=0                        
+                        
+                    cost,layers=connectiongroup_costcalculator('',cgtype_id,long, openings, airtable_rlcgctype_data,airtable_clayers)
+                    
+                    if 'H.ST_Bottom' in boxtype:                        
+                        costpermeter=round(cost/6, 2)
+                    else:                        
+                        costpermeter=round(cost/3, 2)
+                    
+                    # ----------------------------------------------------------------------
+                                 
+                    # Agregar el valor a records_list
+                    records_list.append({
+                        'cgtype_id': cgtype_id,
+                        'box_type':boxtype,
+                        'connectiongroup_class': connectiongroup_class,
+                        'description': description,  
+                        'ScrewLong':screwlong,
+                        'ScrewCadence':screwcadence,
+                        'AngleCadence':anglecadence,
+                        'planilla':planilla,
+                        'AngleType':angletype,
+                        'EndHD':endHD,
+                        'BalconyHD':balconyHD, 
+                        'EstimatedCost':f"{costpermeter} €"                                                                
+                    })
+                                        
+                # Obtener el offset para la siguiente página, si no hay más, el valor será None y salimos del bucle
+                offset = data.get('offset')
+                if not offset:
+                    break
+            else:
+                # Si la petición no fue exitosa, imprimir el mensaje de error
+                records_list = [f"Error al obtener datos: {response.status_code} - {response.text}"]
+                break
+
+        # Ordenar registros
+        records_list = sorted(records_list, key=lambda x: x['cgtype_id'])
+        
+
+    except requests.exceptions.RequestException as e:
+        # Manejar excepciones de conexión
+        records_list = [f"Error de conexión: {e}"]
+
+    return records_list
+
 def get_clayers(cgt):
     ct_info=get_connectiontype(cgt)
     
@@ -977,8 +1087,8 @@ def connectiongroup_costcalculator(parentid,connectiongroup_type, long, openings
     finalclayers=[]    
     filteredconnectiontypes=[]
     for i in airtable_rlcgctype_data:
-        if connectiongroup_type in i['connectiongroup_type_id'] and connectiongroup_type!='':
-            i['parentjoint_id']=parentid
+        if i.get('connectiongroup_type_id') and connectiongroup_type in i.get('connectiongroup_type_id', '') and connectiongroup_type != '':
+            i['parentjoint_id'] = parentid
             filteredconnectiontypes.append(i)
         
     connectiongroup_cost = 0

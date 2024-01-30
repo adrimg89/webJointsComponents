@@ -27,8 +27,11 @@
             <th>Screw Cadence
                 <select class="filter-select" data-column-index="4" id="filter-screwcadence"></select>
             </th>
+            <th>Angle Type
+                <select class="filter-select" data-column-index="5" id="filter-angletype"></select>
+            </th>
             <th>Angle Cadence
-                <select class="filter-select" data-column-index="5" id="filter-anglecadence"></select>
+                <select class="filter-select" data-column-index="6" id="filter-anglecadence"></select>
             </th> 
             <th>Estimated €/m</th>          
         </tr>
@@ -40,7 +43,8 @@
             <td>{{ record.description }}</td>
             <td>{{ record.ScrewLong }}</td>
             <td>{{ record.ScrewCadence }}</td>
-            <td>{{ record.AngleCadence }}</td>
+            <td>{{ record.AngleType }}</td>
+            <td>{{ record.AngleCadence }}</td>            
             <td>{{ record.EstimatedCost }}</td>
         </tr>
         {% endfor %}

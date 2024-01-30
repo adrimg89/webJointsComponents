@@ -75,7 +75,8 @@ $(document).ready(function () {
         llenarDesplegable(2, "#filter-desc");
         llenarDesplegable(3, "#filter-screwlong");
         llenarDesplegable(4, "#filter-screwcadence");
-        llenarDesplegable(5, "#filter-anglecadence");
+        llenarDesplegable(5, "#filter-angletype");
+        llenarDesplegable(6, "#filter-anglecadence");
     }
 
     // Llenar los desplegables al cargar la página inicialmente

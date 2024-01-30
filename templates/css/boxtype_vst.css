@@ -77,7 +77,12 @@ td:nth-child(6) {
 
 th:nth-child(7),
 td:nth-child(7) {
-    width: 3%; /* Anchura para la sept columna */
+    width: 10%; /* Anchura para la septima columna */
+}
+
+th:nth-child(8),
+td:nth-child(8) {
+    width: 3%; /* Anchura para la octava columna */
 }
 
 /* Estilos para los botones */

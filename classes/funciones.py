@@ -344,12 +344,15 @@ def getcgclass():
                     fields = record['fields']
 
                     # Obtener el valor de la columna 'joint_type_id'
-                    connectiongroup_class = fields.get('connectiongroup_class')
-                    Description_CGClass = fields.get('Description_CGClass')
-                    planilla = fields.get('Planilla PDF')
-                    box_type = fields.get('box_type (from boxtype_id)')
-                    miniatura = fields.get('Miniatura_2')
-                    miniatura_url=miniatura[0].get('url')
+                    connectiongroup_class = fields.get('connectiongroup_class','')
+                    Description_CGClass = fields.get('Description_CGClass','')
+                    planilla = fields.get('Planilla PDF','')
+                    box_type = fields.get('box_type (from boxtype_id)','')
+                    miniatura = fields.get('Miniatura_2','')
+                    if miniatura:
+                        miniatura_url=miniatura[0].get('url','')
+                    else:
+                        miniatura_url=''
                                  
                     # Agregar el valor a records_list
                     records_list.append({
@@ -372,7 +375,7 @@ def getcgclass():
                 break
 
         # Ordenar registros
-        records_list = sorted(records_list, key=lambda x: x['box_type'], reverse=True)
+        records_list = sorted(records_list, key=lambda x: str(x['box_type']), reverse=True)
         
 
     except requests.exceptions.RequestException as e:
@@ -697,7 +700,7 @@ def boxes_info_joint(ruta):
         cgc=JS_Joint_Specification.get('JS_ConnectionGroupClass','')
         parent_joint_id = JS_Joint_Specification.get('JS_ParentJointInstanceID', '')
         r_guid = i_psets['EI_Interoperability'].get('RevitGUID', '')
-        QU_Length=QU_Quantity.get('QU_Length_m', 0)
+        QU_Length=round(QU_Quantity.get('QU_Length_m', 0), 2)
         Box_type=Pset_QuantityTakeOff.get('Reference', '')
         joint_type=JS_Joint_Specification.get('JS_JointType','')
         inst_a=JS_Joint_Specification.get('JS_C01_ID', '')

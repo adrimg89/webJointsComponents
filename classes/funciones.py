@@ -1020,14 +1020,14 @@ jointsplayground_connect = airtable_conection(adri_jointsplayground_api_key,join
 joints3playground_connect=airtable_conection(adri_joints3playground_api_key,materiallayers_base_id)
 
 def jointsplayground_connectiongroup():    
-    resultados_cgtype = jointsplayground_connect.list(cgtype_table,view='AM', fields=['cgtype_id','Description','api_ConnectionGroup_Class','RL_ConnectionGroupType_ConnectionType_api'])
+    resultados_cgtype = joints3playground_connect.list(cgtype_table,view='AM', fields=['cgtype_id','Description','api_ConnectionGroup_Class','RL_ConnectionGroupType_ConnectionType_api'])
     connectiongroup_types = []
     for i in resultados_cgtype:
         connectiongroup_types.append(i['fields'])
     return connectiongroup_types
 
 def connectiontype_of_connectiongroup(connectiongroup_type):
-    resultados_rl_cgtype_ctype = jointsplayground_connect.list(rl_cgtype_ctype_table, view='AMG_Export', fields=['connectiongroup_type_id','connection_type','Performance','Calculation Formula'],filter="SEARCH('"+connectiongroup_type+"', {connectiongroup_type_id})")
+    resultados_rl_cgtype_ctype = joints3playground_connect.list(rl_cgtype_ctype_table, view='AMG_Export', fields=['connectiongroup_type_id','connection_type','Performance','Calculation Formula'],filter="SEARCH('"+connectiongroup_type+"', {connectiongroup_type_id})")
     connection_types = []    
     for i in resultados_rl_cgtype_ctype:
         connection_types.append(i['fields'])
@@ -1035,7 +1035,7 @@ def connectiontype_of_connectiongroup(connectiongroup_type):
     #tipo de respuesta: [{'Calculation Formula': 'Fix value', 'Performance': 3, 'connection_type': 'H_T3-0003', 'connectiongroup_type_id': 'CG_0004'}, {'Calculation Formula': 'Length * performance', 'Performance': 5, 'connection_type': 'H_C1-0023', 'connectiongroup_type_id': 'CG_0004'}]
 
 def connectionlayers_of_connectiontype(connection_type):
-    resultados_connectionlayers=jointsplayground_connect.list(clayers_table,fields=['connection_type_code','material_id','Performance','Calculation Formula','Current_material_cost','Units'],filter="SEARCH('"+connection_type+"', {connection_type_code})")
+    resultados_connectionlayers=joints3playground_connect.list(clayers_table,fields=['connection_type_code','material_id','Performance','Calculation Formula','Current_material_cost','Units'],filter="SEARCH('"+connection_type+"', {connection_type_code})")
     clayers=[]
     for i in resultados_connectionlayers:
         clayers.append(i['fields'])
@@ -1053,7 +1053,7 @@ def jlayers(joint):
 
 
 def rl_cgtype_ctype():
-    resultados_rl_cgtype_ctype = jointsplayground_connect.list(rl_cgtype_ctype_table, view='AMG_Export', fields=['connectiongroup_type_id','connection_type','Performance','Calculation Formula','is_modeled'])
+    resultados_rl_cgtype_ctype = joints3playground_connect.list(rl_cgtype_ctype_table, view='AMG_Export', fields=['connectiongroup_type_id','connection_type','Performance','Calculation Formula','is_modeled'])
     connection_types = []    
     for i in resultados_rl_cgtype_ctype:
         connection_types.append(i['fields'])
@@ -1061,7 +1061,7 @@ def rl_cgtype_ctype():
     #tipo de respuesta: [{'Calculation Formula': 'Fix value', 'Performance': 3, 'connection_type': 'H_T3-0003', 'connectiongroup_type_id': 'CG_0004'}, {'Calculation Formula': 'Length * performance', 'Performance': 5, 'connection_type': 'H_C1-0023', 'connectiongroup_type_id': 'CG_0004'}]
 
 def connectionlayers():
-    resultados_connectionlayers=jointsplayground_connect.list(clayers_table,fields=['connection_type_code','material_id','Performance','Calculation Formula','Current_material_cost','Units','Description (from Material)','Fase', 'is_modeled'])
+    resultados_connectionlayers=joints3playground_connect.list(clayers_table,fields=['connection_type_code','material_id','Performance','Calculation Formula','Current_material_cost','Units','Description (from Material)','Fase', 'is_modeled'])
     clayers=[]
     for i in resultados_connectionlayers:
         clayers.append(i['fields'])

@@ -19,6 +19,19 @@ def configure_headers():
     
     return headers
 
+def airtable_url_J3(table_name):
+    base_id=materiallayers_base_id
+    
+    url=f'https://api.airtable.com/v0/{base_id}/{table_name}'
+    return url
+
+def configure_headers_J3():
+    api_key=adri_joints3playground_api_key
+    
+    headers={'Authorization': f'Bearer {api_key}'}
+    
+    return headers
+
 def rt_connection():
     config = {
         'user': user_rt,
@@ -181,8 +194,8 @@ def get_joint_layers(joint):
     
 def get_connectiontype(cgt):
     
-    url=airtable_url(connectiontype_table)
-    headers=configure_headers()
+    url=airtable_url_J3(connectiontype_table)
+    headers=configure_headers_J3()
     
     # Variables para controlar la paginación y contar registros
     params = {
@@ -306,8 +319,8 @@ def getLayerGroups(EU):
 
 def getcgclass():
     
-    url=airtable_url(cgclass_table)
-    headers=configure_headers()
+    url=airtable_url_J3(cgclass_table)
+    headers=configure_headers_J3()
     
     # Variables para controlar la paginación y contar registros
     params = {
@@ -333,7 +346,7 @@ def getcgclass():
 
                 # Acceder a los registros de la página actual
                 records = data['records']
-
+                
                 # Si no hay más registros, salir del bucle
                 if not records:
                     break
@@ -385,8 +398,8 @@ def getcgclass():
     return records_list
 
 def getcgtype(cgclass):
-    url=airtable_url(cgtype_table)
-    headers=configure_headers()
+    url=airtable_url_J3(cgtype_table)
+    headers=configure_headers_J3()
     
     params = {
         'filterByFormula': "{api_ConnectionGroup_Class} = '" + cgclass + "'",
@@ -464,8 +477,8 @@ def getcgtypefromboxtype(boxtype):
     airtable_clayers=connectionlayers()
     
     # ------------------------------------------------
-    url=airtable_url(cgtype_table)
-    headers=configure_headers()
+    url=airtable_url_J3(cgtype_table)
+    headers=configure_headers_J3()
     
     params = {
         'filterByFormula': "FIND('"+boxtype+"', ARRAYJOIN({box_type (from boxtype_id)}))",
@@ -575,8 +588,8 @@ def get_clayers(cgt):
     for i in ct_info:
         ct.append(i['connection_type_id'])
     
-    url=airtable_url(clayers_table)
-    headers=configure_headers()
+    url=airtable_url_J3(clayers_table)
+    headers=configure_headers_J3()
     
     records_list = []  # Lista para almacenar los datos que se devolverán como respuesta
     

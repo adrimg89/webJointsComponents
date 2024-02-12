@@ -677,9 +677,11 @@ def ruta_corrector(ruta):
 
 def abrir_ifc(ruta):
     ifc=ifcopenshell.open(ruta)
+    # print('IFC abierto correctamente')
     return ifc
 
 def list_elements(ifc, type, pset, parameter, value):
+    # print('Buscando elementos en el modelo...')
     boxes=[]
     building_elem_proxy_collector = ifc.by_type(type)
     for i in building_elem_proxy_collector:
@@ -688,14 +690,17 @@ def list_elements(ifc, type, pset, parameter, value):
             parameter_value=i_psets[pset].get(parameter, '')
             if value in parameter_value:
                 boxes.append(i)
+    # print('Búsqueda terminada')
     return boxes
 
 
 def boxes_info_joint(ruta):
-    
     boxes_info=[]
     
     ifc=abrir_ifc(ruta)
+    
+    print('Buscando cajas en el modelo...')
+    
     type='IfcBuildingElementProxy'
     pset='EI_Elements Identification'
     parameter='EI_Type'
@@ -708,6 +713,8 @@ def boxes_info_joint(ruta):
         JS_Joint_Specification = i_psets.get('JS_Joint Specification', {})
         QU_Quantity=i_psets.get('QU_Quantity',{})
         Pset_QuantityTakeOff=i_psets.get('Pset_QuantityTakeOff',{})
+        EI_Elements_Identification=i_psets.get('EI_Elements Identification',{})
+        EI_LocalisationCodeFloor=EI_Elements_Identification.get('EI_LocalisationCodeFloor','')
         JointTypeID = JS_Joint_Specification.get('JS_JointTypeID', '')
         cgt=JS_Joint_Specification.get('JS_ConnectionGroupTypeID', '')
         cgc=JS_Joint_Specification.get('JS_ConnectionGroupClass','')
@@ -723,11 +730,26 @@ def boxes_info_joint(ruta):
         Q2matgroup=JS_Joint_Specification.get('JS_Q2_matgroup','')
         Q3matgroup=JS_Joint_Specification.get('JS_Q3_matgroup','')
         Q4matgroup=JS_Joint_Specification.get('JS_Q4_matgroup','')
-        parameters_info={'RevitGUID':r_guid, 'JS_ParentJointInstanceID':parent_joint_id, 'JS_JointTypeID':JointTypeID, 'JS_ConnectionGroupTypeID':cgt, 'Core Matgroup':corematgroup,'Q1 Matgroup':Q1matgroup, 'Q2 Matgroup':Q2matgroup,'Q3 Matgroup':Q3matgroup,'Q4 Matgroup':Q4matgroup,'QU_Length_m':QU_Length, 'Box_type':Box_type, 'JS_JointType':joint_type, 'JS_ConnectionGroupClass':cgc, 'JS_C01_ID':inst_a, 'JS_C02_ID':inst_b}
+        parameters_info={'RevitGUID':r_guid,
+                         'JS_ParentJointInstanceID':parent_joint_id,
+                         'JS_JointTypeID':JointTypeID,
+                         'JS_ConnectionGroupTypeID':cgt,
+                         'Core Matgroup':corematgroup,
+                         'Q1 Matgroup':Q1matgroup,
+                         'Q2 Matgroup':Q2matgroup,
+                         'Q3 Matgroup':Q3matgroup,
+                         'Q4 Matgroup':Q4matgroup,
+                         'QU_Length_m':QU_Length,
+                         'Box_type':Box_type,
+                         'JS_JointType':joint_type,
+                         'JS_ConnectionGroupClass':cgc,
+                         'JS_C01_ID':inst_a,
+                         'JS_C02_ID':inst_b,
+                         'EI_LocalisationCodeFloor':EI_LocalisationCodeFloor
+                         }
         boxes_info.append(parameters_info)
-    
+    print('Búsqueda de cajas terminada')
     return boxes_info
-
 
 def get_boxesfilteredbyPJ(ruta_archivo):
     
@@ -736,15 +758,32 @@ def get_boxesfilteredbyPJ(ruta_archivo):
     parents_únicos=set()
 
     allboxes_info_filtered=[]
-
+    
+    print('Filtrando cajas...')
+    
     for info in allboxes_info:
         parent=info['JS_ParentJointInstanceID']
-        #print(parent)
-        
+        if parent not in parents_únicos and info['JS_JointType']!='':
+            parents_únicos.add(parent)
+            allboxes_info_filtered.append(info)
+    
+    print('Primer barrido listo')
+            
+    for info in allboxes_info:
+        parent=info['JS_ParentJointInstanceID']
+        if parent not in parents_únicos and 'GMO' in info['Box_type']:
+            parents_únicos.add(parent)
+            allboxes_info_filtered.append(info)
+    
+    print('Segundo barrido listo')
+    
+    for info in allboxes_info:
+        parent=info['JS_ParentJointInstanceID']
         if parent not in parents_únicos:
             parents_únicos.add(parent)
-            #print(parents_únicos)
-            allboxes_info_filtered.append(info)
+            allboxes_info_filtered.append(info) 
+            
+    print('Tercer y último barrido listo')
                 
     return allboxes_info_filtered
 
@@ -752,6 +791,9 @@ def get_balconys(ruta):
     
     balcony=[]
     ifc=abrir_ifc(ruta)
+    
+    print('Buscando windows con altura de más de 1,8 metros...')
+    
     type='IfcWindow'
     filterbytype=ifc.by_type(type)
     
@@ -764,12 +806,18 @@ def get_balconys(ruta):
         QU_Height=QU_Quantity.get('QU_Height_m', '')
         if QU_Height>1.8:
             balcony.append({'EI_OpeningType':EI_OpeningType,'EI_HostComponentInstanceID':EI_HostComponentInstanceID,'QU_Height_m':QU_Height})
+    
+    print('Búsqueda terminada')
+    
     return balcony
 
 def get_huecosdepaso(ruta):
     
     doorspaso_info=[]
     ifc=abrir_ifc(ruta)
+    
+    print('Buscando huecos de paso interiores en el modelo...')
+    
     type='IfcWall'
     filterbytype=ifc.by_type(type)
     
@@ -783,11 +831,17 @@ def get_huecosdepaso(ruta):
         Params_info={'EI_HostComponentInstanceID':EI_HostComponentInstanceID,'EI_OpeningType':EI_OpeningType, 'Category':Category}
         if Category=='Doors':
                 doorspaso_info.append(Params_info)
+    
+    print('Búsqueda terminada')
+    
     return doorspaso_info
 
 def get_doors(ruta):
     doors_info=[]
     ifc=abrir_ifc(ruta)
+    
+    print('Buscando puertas en el modelo...')
+    
     type='IfcDoor'
     filterbytype=ifc.by_type(type)
     
@@ -800,6 +854,9 @@ def get_doors(ruta):
         Category=Pset_ProductRequirements.get('Category', '')
         Params_info={'EI_HostComponentInstanceID':EI_HostComponentInstanceID,'EI_OpeningType':EI_OpeningType, 'Category':Category}
         doors_info.append(Params_info)
+        
+    print('Búsqueda terminada')    
+    
     return doors_info
 
 def get_alldoors(ruta):
@@ -829,7 +886,7 @@ def nrtallopenings_byinstance(ruta):
     return recuento_balconerasporinstancia
 
 def getboxesfilteredwithbalconies(ruta):
-    herrajesmodelados=getmodeledconnections(ruta)
+    # herrajesmodelados=getmodeledconnections(ruta)
     balcony_instances_input=nrtallopenings_byinstance(ruta)
     allboxes_info_filtered_input=get_boxesfilteredbyPJ(ruta)
     boxesandbalconys=[]
@@ -849,11 +906,14 @@ def getboxesfilteredwithbalconies(ruta):
         else:
             i['nrbalconies']=0
             boxesandbalconys.append(i)
-    return boxesandbalconys,herrajesmodelados
+    return boxesandbalconys
 
 def getmodeledconnections(ruta):
     connections_info=[]    
     ifc=abrir_ifc(ruta)
+    
+    print('Recopilando las conexiones modeladas...')
+    
     type='IfcBuildingElementProxy'
     pset='EI_Elements Identification'
     parameter='EI_Type'
@@ -863,10 +923,16 @@ def getmodeledconnections(ruta):
         i_psets = ifcopenshell.util.element.get_psets(i)        
         JS_Joint_Specification = i_psets.get('JS_Joint Specification', {})    
         EI_Interoperability=i_psets.get('EI_Interoperability', {})
+        EI_Elements_Identification=i_psets.get('EI_Elements Identification',{})
+        EI_LocalisationCodeFloor=EI_Elements_Identification.get('EI_LocalisationCodeFloor','')
         connectiontype_id = JS_Joint_Specification.get('JS_ConnectionTypeID', '')        
         parent_joint_id = JS_Joint_Specification.get('JS_ParentJointInstanceID', '')
         r_guid = EI_Interoperability.get('RevitGUID', '')      
-        parameters_info={'RevitGUID':r_guid,'JS_ParentJointInstanceID': parent_joint_id, 'JS_ConnectionTypeID':connectiontype_id}
+        parameters_info={'RevitGUID':r_guid,
+                         'JS_ParentJointInstanceID': parent_joint_id,
+                         'JS_ConnectionTypeID':connectiontype_id,
+                         'EI_LocalisationCodeFloor':EI_LocalisationCodeFloor
+                         }
         connections_info.append(parameters_info)        
     
     recuento = {}
@@ -902,6 +968,8 @@ def getmodeledconnections(ruta):
                      'is_modeled':'modeled',
                      'parentjoint_id':herraje['ParentJoint_id']}
         listconnectiontypesmodelados.append(new_herraje)
+        
+    print('Búsqueda de conexiones terminada')
     
     return listconnectiontypesmodelados
 
@@ -958,7 +1026,7 @@ def export_excel_infofilteredboxes(rutaifc):
     print(f"Resultados exportados a {excel_file_name} en la ruta: {directorio_ifc}")
 
 def export2excel(ruta):
-    boxesinfo, herrajesmodelados = getboxesfilteredwithbalconies(ruta)
+    boxesinfo = getboxesfilteredwithbalconies(ruta)    
     
     # Obtener el nombre del archivo IFC sin la extensión
     nombre_archivo = os.path.splitext(os.path.basename(ruta))[0]
@@ -1568,11 +1636,13 @@ def boqfromlistofparentsJ3(parents,herrajesmodelados,inputcalculoconexion):
         for connection in connection_modeled_materials:
             if connection['parentjoint_id']=='':
                 connection['cgtype_id']=''
+                connection['LocalisationCodeFloor']=''
                 listadeherrajes.append(connection)
             else:
                 for parent in parents:
                     if connection['parentjoint_id'] == parent['JS_ParentJointInstanceID']:
                         connection['cgtype_id']=parent['JS_ConnectionGroupTypeID']
+                        connection['LocalisationCodeFloor']=parent['EI_LocalisationCodeFloor']
                         listadeherrajes.append(connection)
     
     for parent in parents:
@@ -1582,6 +1652,7 @@ def boqfromlistofparentsJ3(parents,herrajesmodelados,inputcalculoconexion):
         for material in materiales:
             if material['api_id']!='':
                 new_material=material.copy()
+                new_material['LocalisationCodeFloor']=parent['EI_LocalisationCodeFloor']
                 # material['parentjoint_id']=parent['JS_ParentJointInstanceID']
                 listamateriales.append(new_material)
         for herraje in herrajes:
@@ -1592,20 +1663,21 @@ def boqfromlistofparentsJ3(parents,herrajesmodelados,inputcalculoconexion):
             # nuevo_herraje['parentjoint_id'] = parent['JS_ParentJointInstanceID']
             nuevo_herraje['cgtype_id'] = parent['JS_ConnectionGroupTypeID']
             nuevo_herraje['cgclass_id'] = parent['JS_ConnectionGroupClass']
+            nuevo_herraje['LocalisationCodeFloor']=parent['EI_LocalisationCodeFloor']
             
             # Agrega la copia a la lista 'listadeherrajes'
             listadeherrajes.append(nuevo_herraje)
         for corematerial in corematerials:            
             nuevo_corematerial = corematerial.copy()
                         
-            # nuevo_corematerial['parentjoint_id'] = parent['JS_ParentJointInstanceID']
+            nuevo_corematerial['LocalisationCodeFloor']=parent['EI_LocalisationCodeFloor']
                                    
             listamateriales.append(nuevo_corematerial)
             
         for Q1material in Q1materials:            
             nuevo_Q1material = Q1material.copy()
                         
-            # nuevo_Q1material['parentjoint_id'] = parent['JS_ParentJointInstanceID']
+            nuevo_Q1material['LocalisationCodeFloor']=parent['EI_LocalisationCodeFloor']
                       
             listamateriales.append(nuevo_Q1material)
             
@@ -1613,7 +1685,7 @@ def boqfromlistofparentsJ3(parents,herrajesmodelados,inputcalculoconexion):
         for Q2material in Q2materials:            
             nuevo_Q2material = Q2material.copy()
                         
-            # nuevo_Q2material['parentjoint_id'] = parent['JS_ParentJointInstanceID']
+            nuevo_Q2material['LocalisationCodeFloor']=parent['EI_LocalisationCodeFloor']
                       
             listamateriales.append(nuevo_Q2material)
             
@@ -1621,14 +1693,14 @@ def boqfromlistofparentsJ3(parents,herrajesmodelados,inputcalculoconexion):
         for Q3material in Q3materials:            
             nuevo_Q3material = Q3material.copy()
                         
-            # nuevo_Q3material['parentjoint_id'] = parent['JS_ParentJointInstanceID']
+            nuevo_Q3material['LocalisationCodeFloor']=parent['EI_LocalisationCodeFloor']
                       
             listamateriales.append(nuevo_Q3material)
             
         for Q4material in Q4materials:            
             nuevo_Q4material = Q4material.copy()
                         
-            # nuevo_Q4material['parentjoint_id'] = parent['JS_ParentJointInstanceID']
+            nuevo_Q4material['LocalisationCodeFloor']=parent['EI_LocalisationCodeFloor']
                       
             listamateriales.append(nuevo_Q4material)
                         
@@ -1674,126 +1746,3 @@ def guardarxlsfromxls(listaconcoste, listamateriales, listaherrajes, ruta_excel)
 #-----------------------------------------------------PRUEBAS-------------------------------------------------
 #-------------------------------------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------------------------------------
-
-# def WIP_inferredandmodeled_advanced_connectiongroup_costcalculator(parentid,connectiongroup_type, long, openings, airtable_rlcgctype_data, airtable_clayers,herrajesmodelados): 
-    # inferredconnectiontypes=[]
-    # modeledconnectiontypes=herrajesmodelados
-    # finalconnectiontypes=[]
-    
-    # inferredandmodeledclayers=[]
-
-    # listadeparentsconalgunherrajemodelado=[]
-    
-    # for i in modeledconnectiontypes:
-    #     if i['parentjoint_id'] not in listadeparentsconalgunherrajemodelado:
-    #         listadeparentsconalgunherrajemodelado.append(i['parentjoint_id'])
-        
-    
-    # for line in airtable_rlcgctype_data:
-        
-    #     if connectiongroup_type in line['connectiongroup_type_id'] and connectiongroup_type!='':
-    #         line['parentjoint_id']=parentid                  
-    #         inferredconnectiontypes.append(line)
-            
-    # if inferredconnectiontypes==[]:
-    #     for herraje in modeledconnectiontypes:
-    #         if parentid==herraje['parentjoint_id']:
-    #             finalconnectiontypes.append(herraje)
-        
-    
-    # recuentodeconnectiontypes=[]
-            
-    # for connectiontype in inferredconnectiontypes:
-    #     if connectiontype['is_modeled'][0]=='Yes':
-    #         if connectiontype['parentjoint_id'] not in listadeparentsconalgunherrajemodelado:
-    #             finalconnectiontypes.append(connectiontype)
-    #         for herraje in modeledconnectiontypes:
-    #             if herraje['parentjoint_id']==connectiontype['parentjoint_id'] and herraje['connection_type']==connectiontype['connection_type']:
-    #             #si coinciden el parent y el connection type
-    #                 if herraje['connection_type'] not in recuentodeconnectiontypes:
-    #                     newconnectiontype=connectiontype.copy()
-    #                     newconnectiontype['Calculation Formula']='Fix value' 
-    #                     newconnectiontype['Performance']=herraje['Performance']  
-    #                     newconnectiontype['is_modeled']='modeled' 
-    #                     recuentodeconnectiontypes.append(herraje['connection_type'])
-    #                     finalconnectiontypes.append(newconnectiontype)
-    #             if herraje['parentjoint_id']==connectiontype['parentjoint_id'] and herraje['connection_type']!=connectiontype['connection_type']:
-    #             #si coinciden el parent y pero el connectiontype es diferente    
-    #                 if herraje['connection_type'] not in recuentodeconnectiontypes:
-    #                     newconnectiontype={}
-    #                     newconnectiontype['Calculation Formula']='Fix value' 
-    #                     newconnectiontype['Performance']=herraje['Performance'] 
-    #                     newconnectiontype['connection_type']=herraje['connection_type']
-    #                     newconnectiontype['connectiongroup_type_id']='' 
-    #                     newconnectiontype['is_modeled']='modeled' 
-    #                     newconnectiontype['parentjoint_id']=herraje['parentjoint_id']
-    #                     recuentodeconnectiontypes.append(herraje['connection_type'])
-    #                     finalconnectiontypes.append(newconnectiontype)
-                
-                    
-    #     if connectiontype['is_modeled'][0]=='No':
-    #         finalconnectiontypes.append(connectiontype)
-                        
-    # connectiongroup_cost = 0
-    # for connectiontype in finalconnectiontypes:
-    #     connectiontype_id=connectiontype['connection_type']
-    #     connectiontype_calcform=connectiontype['Calculation Formula']
-    #     connectiontype_performance=connectiontype['Performance']          
-    #     allclayers=airtable_clayers
-    #     filteredclayers=[]
-        
-    #     for i in allclayers:
-    #         if connectiontype_id in i['connection_type_code']:
-    #             i['parentjoint_id']=parentid
-    #             filteredclayers.append(i)
-                
-    #     for clayer in filteredclayers:
-    #         material_performance=clayer['Performance']
-    #         material_formula=clayer['Calculation Formula']
-    #         material_sku=clayer['material_id']
-    #         material_cost=clayer.get('Current_material_cost',[0])[0]
-    #         material_unit=clayer['Units'][0]                     
-            
-    #         if material_formula=='Fix value':
-    #             if material_unit=='U':
-    #                 if connectiontype_calcform=='Length * performance':
-    #                     quantity=math.ceil(material_performance*connectiontype_performance*long)
-    #                     connectiongroup_cost=connectiongroup_cost+material_cost*quantity
-    #                     clayer['quantity']=quantity
-    #                     clayer['layer_cost']=material_cost*quantity
-    #                 elif connectiontype_calcform=='Opening * performance':
-    #                     quantity=material_performance*connectiontype_performance*openings
-    #                     connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
-    #                     clayer['quantity']=quantity
-    #                     clayer['layer_cost']=material_cost*quantity                        
-    #                 else:
-    #                     quantity=material_performance*connectiontype_performance
-    #                     connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
-    #                     clayer['quantity']=quantity
-    #                     clayer['layer_cost']=material_cost*quantity
-    #             else:
-    #                 if connectiontype_calcform=='Length * performance':
-    #                     quantity=material_performance*connectiontype_performance*long
-    #                     connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
-    #                     clayer['quantity']=quantity
-    #                     clayer['layer_cost']=material_cost*quantity
-    #                 elif connectiontype_calcform=='Opening * performance':
-    #                     quantity=material_performance*connectiontype_performance*openings
-    #                     connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
-    #                     clayer['quantity']=quantity
-    #                     clayer['layer_cost']=material_cost*quantity
-    #                 else:
-    #                     quantity=material_performance*connectiontype_performance
-    #                     connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
-    #                     clayer['quantity']=quantity
-    #                     clayer['layer_cost']=material_cost*quantity
-    #         inferredandmodeledclayers.append(clayer)        
-            
-    # return connectiongroup_cost, inferredandmodeledclayers        
-        
-        
-        
-    
-        
-        
-        

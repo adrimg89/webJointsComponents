@@ -2,5 +2,6 @@ passwords.py
 /env
 /__pycache__
 app_pruebas.py
+app_pruebas2.py
 app_3.py
-/classes/funciones_2.py
+/classes/funciones_opt.py

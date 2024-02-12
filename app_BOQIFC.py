@@ -2,7 +2,7 @@
 #Input necesario: Ruta del IFC
 #Output: Excel en la misma ubicación con el mismo nombre
 
-from classes.funciones import getboxesfilteredwithbalconies, ruta_corrector,guardarxlsfromIFC, leer_archivo_xlsx, boqfromlistofparentsJ3, guardarxlsfromxls,export2excel,export_excel_infoallboxes,export_excel_infofilteredboxes
+from classes.funciones import getboxesfilteredwithbalconies, ruta_corrector,guardarxlsfromIFC, leer_archivo_xlsx, boqfromlistofparentsJ3, guardarxlsfromxls,export2excel,export_excel_infoallboxes,export_excel_infofilteredboxes, getmodeledconnections
 
 
 
@@ -35,7 +35,9 @@ La pestaña "Parentwithcost" no mostrará el coste correcto. Revisar coste en Li
 
     ruta_modificada=ruta_corrector(ruta)
 
-    parentsfromifc,herrajesmodelados=getboxesfilteredwithbalconies(ruta)
+    parentsfromifc=getboxesfilteredwithbalconies(ruta_modificada)
+    
+    herrajesmodelados=getmodeledconnections(ruta_modificada)
 
     coste,matjoints,herrajes=boqfromlistofparentsJ3(parentsfromifc,herrajesmodelados,inputcalculoconexion)
 
@@ -57,7 +59,7 @@ if input_usuario=='b':
 
     herrajesmodelados=[]
 
-    # herrajesmodelados=getmodeledconnections(rutaIFC_correcta)
+    herrajesmodelados=getmodeledconnections(ruta_modificada)
 
     listaconcoste,listamateriales,listadeherrajes=boqfromlistofparentsJ3(listaparents,herrajesmodelados,'a')
 

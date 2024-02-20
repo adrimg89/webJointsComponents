@@ -194,7 +194,7 @@ def get_joint_layers(joint):
     
 def get_connectiontype(cgt):
     
-    url=airtable_url_J3(connectiontype_table)
+    url=airtable_url_J3(rl_cgtype_ctype_table)
     headers=configure_headers_J3()
     
     # Variables para controlar la paginación y contar registros
@@ -1183,12 +1183,14 @@ def connectiongroup_costcalculator(parentid,connectiongroup_type, long, openings
         allclayers=airtable_clayers
         filteredclayers=[]
         
+        
         for i in allclayers:
             if connectiontype_id in i['connection_type_code']:
                 i['parentjoint_id']=parentid
                 filteredclayers.append(i)
                 
         for clayer in filteredclayers:
+            new_clayer=clayer.copy()
             material_performance=clayer['Performance']
             material_formula=clayer['Calculation Formula']
             material_sku=clayer['material_id']
@@ -1200,35 +1202,43 @@ def connectiongroup_costcalculator(parentid,connectiongroup_type, long, openings
                     if connectiontype_calcform=='Length * performance':
                         quantity=math.ceil(material_performance*connectiontype_performance*long)
                         connectiongroup_cost=connectiongroup_cost+material_cost*quantity
-                        clayer['quantity']=quantity
-                        clayer['layer_cost']=material_cost*quantity
+                        new_clayer['quantity']=quantity
+                        new_clayer['layer_cost']=material_cost*quantity
+                        finalclayers.append(new_clayer)
                     elif connectiontype_calcform=='Opening * performance':
                         quantity=material_performance*connectiontype_performance*openings
                         connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
-                        clayer['quantity']=quantity  
-                        clayer['layer_cost']=material_cost*quantity                      
+                        new_clayer['quantity']=quantity  
+                        new_clayer['layer_cost']=material_cost*quantity
+                        finalclayers.append(new_clayer)                    
                     else:
                         quantity=material_performance*connectiontype_performance
                         connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
-                        clayer['quantity']=quantity
-                        clayer['layer_cost']=material_cost*quantity
+                        new_clayer['quantity']=quantity
+                        new_clayer['layer_cost']=material_cost*quantity
+                        finalclayers.append(new_clayer)
                 else:
                     if connectiontype_calcform=='Length * performance':
                         quantity=material_performance*connectiontype_performance*long
                         connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
-                        clayer['quantity']=quantity
-                        clayer['layer_cost']=material_cost*quantity
+                        new_clayer['quantity']=quantity
+                        new_clayer['layer_cost']=material_cost*quantity
+                        finalclayers.append(new_clayer)
                     elif connectiontype_calcform=='Opening * performance':
                         quantity=material_performance*connectiontype_performance*openings
                         connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
-                        clayer['quantity']=quantity
-                        clayer['layer_cost']=material_cost*quantity
+                        new_clayer['quantity']=quantity
+                        new_clayer['layer_cost']=material_cost*quantity
+                        finalclayers.append(new_clayer)
                     else:
                         quantity=material_performance*connectiontype_performance
                         connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
-                        clayer['quantity']=quantity
-                        clayer['layer_cost']=material_cost*quantity
-            finalclayers.append(clayer)
+                        new_clayer['quantity']=quantity
+                        new_clayer['layer_cost']=material_cost*quantity                        
+                        finalclayers.append(new_clayer)
+        
+        # print (connectiontype_calcform)
+        # for i in filteredclayers:print(i)
     return connectiongroup_cost,finalclayers    
 
 def inferredandmodeled_advanced_connectiongroup_costcalculator(parentid,connectiongroup_type, long, openings, airtable_rlcgctype_data, airtable_clayers,herrajesmodelados): #calcula el coste y la lista teniendo en cuenta para cada parent joint si tiene elementos modelados o no
@@ -1306,6 +1316,7 @@ def inferredandmodeled_advanced_connectiongroup_costcalculator(parentid,connecti
                 filteredclayers.append(i)
                 
         for clayer in filteredclayers:
+            new_clayer=clayer.copy()
             material_performance=clayer['Performance']
             material_formula=clayer['Calculation Formula']
             material_sku=clayer['material_id']
@@ -1317,35 +1328,41 @@ def inferredandmodeled_advanced_connectiongroup_costcalculator(parentid,connecti
                     if connectiontype_calcform=='Length * performance':
                         quantity=math.ceil(material_performance*connectiontype_performance*long)
                         connectiongroup_cost=connectiongroup_cost+material_cost*quantity
-                        clayer['quantity']=quantity
-                        clayer['layer_cost']=material_cost*quantity
+                        new_clayer['quantity']=quantity
+                        new_clayer['layer_cost']=material_cost*quantity
+                        inferredandmodeledclayers.append(new_clayer)
                     elif connectiontype_calcform=='Opening * performance':
                         quantity=material_performance*connectiontype_performance*openings
                         connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
-                        clayer['quantity']=quantity
-                        clayer['layer_cost']=material_cost*quantity                        
-                    else:
+                        new_clayer['quantity']=quantity
+                        new_clayer['layer_cost']=material_cost*quantity 
+                        inferredandmodeledclayers.append(new_clayer)                       
+                    elif connectiontype_calcform=='Fix value':
                         quantity=material_performance*connectiontype_performance
                         connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
-                        clayer['quantity']=quantity
-                        clayer['layer_cost']=material_cost*quantity
+                        new_clayer['quantity']=quantity
+                        new_clayer['layer_cost']=material_cost*quantity
+                        inferredandmodeledclayers.append(new_clayer)
                 else:
                     if connectiontype_calcform=='Length * performance':
                         quantity=material_performance*connectiontype_performance*long
                         connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
-                        clayer['quantity']=quantity
-                        clayer['layer_cost']=material_cost*quantity
+                        new_clayer['quantity']=quantity
+                        new_clayer['layer_cost']=material_cost*quantity
+                        inferredandmodeledclayers.append(new_clayer)
                     elif connectiontype_calcform=='Opening * performance':
                         quantity=material_performance*connectiontype_performance*openings
                         connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
-                        clayer['quantity']=quantity
-                        clayer['layer_cost']=material_cost*quantity
-                    else:
+                        new_clayer['quantity']=quantity
+                        new_clayer['layer_cost']=material_cost*quantity
+                        inferredandmodeledclayers.append(new_clayer)
+                    elif connectiontype_calcform=='Fix value':
                         quantity=material_performance*connectiontype_performance
                         connectiongroup_cost=connectiongroup_cost+material_cost*quantity                        
-                        clayer['quantity']=quantity
-                        clayer['layer_cost']=material_cost*quantity
-            inferredandmodeledclayers.append(clayer)        
+                        new_clayer['quantity']=quantity
+                        new_clayer['layer_cost']=material_cost*quantity
+                        inferredandmodeledclayers.append(new_clayer)
+                    
             
     return connectiongroup_cost, inferredandmodeledclayers 
 
@@ -1452,6 +1469,7 @@ def realmodeledconnections_costcalculator(herrajesmodelados, airtable_clayers):
                 filteredclayers.append(new_layer)
                 
         for clayer in filteredclayers:
+            new_clayer=clayer.copy()
             material_performance=clayer['Performance']
             material_formula=clayer['Calculation Formula']            
             material_cost=clayer.get('Current_material_cost',[0])[0]
@@ -1460,13 +1478,14 @@ def realmodeledconnections_costcalculator(herrajesmodelados, airtable_clayers):
             if material_formula=='Fix value':
                 if material_unit=='U':                                                                          
                     quantity=material_performance*connectiontype_performance                                            
-                    clayer['quantity']=quantity
-                    clayer['layer_cost']=material_cost*quantity
+                    new_clayer['quantity']=quantity
+                    new_clayer['layer_cost']=material_cost*quantity
+                    realmodeled_clayers.append(new_clayer)
                 else:                    
                     quantity=material_performance*connectiontype_performance                                            
-                    clayer['quantity']=quantity
-                    clayer['layer_cost']=material_cost*quantity
-            realmodeled_clayers.append(clayer)
+                    new_clayer['quantity']=quantity
+                    new_clayer['layer_cost']=material_cost*quantity
+                    realmodeled_clayers.append(new_clayer)            
     
     return realmodeled_clayers 
  

@@ -7,7 +7,7 @@ import pandas as pd
 #--------------------------------------------------------------------------- Funciones que generan datos para app web
 
 def airtable_url(table_name):
-    base_id=joints_base_id
+    base_id=joints2_base_id
     
     url=f'https://api.airtable.com/v0/{base_id}/{table_name}'
     return url
@@ -20,7 +20,7 @@ def configure_headers():
     return headers
 
 def airtable_url_J3(table_name):
-    base_id=materiallayers_base_id
+    base_id=joints3_base_id
     
     url=f'https://api.airtable.com/v0/{base_id}/{table_name}'
     return url
@@ -441,6 +441,7 @@ def getcgtype(cgclass):
                     cgclass_description = fields.get('CG_Class_api')
                     description = fields.get('Description')
                     connectiontype = fields.get('RL_cgtype_ctype (from ConnectionGroup_type)')
+                    status=fields.get('Status','')
                                  
                     # Agregar el valor a records_list
                     records_list.append({
@@ -448,7 +449,8 @@ def getcgtype(cgclass):
                         'connectiongroup_class': connectiongroup_class,
                         'cgclass_description': cgclass_description,  
                         'description': description,  
-                        'connectiontype': connectiontype                                         
+                        'connectiontype': connectiontype,
+                        'status':status                                         
                     })
                                         
                 # Obtener el offset para la siguiente página, si no hay más, el valor será None y salimos del bucle
@@ -514,7 +516,7 @@ def getcgtypefromboxtype(boxtype):
                     # Cada registro tiene un campo 'fields' con los datos reales
                     fields = record['fields']
 
-                    # Obtener el valor de la columna 'joint_type_id'
+                    # Obtener el valor de las columnas 
                     cgtype_id = fields.get('cgtype_id')
                     boxtype=fields.get('box_type (from boxtype_id)','')
                     connectiongroup_class = fields.get('api_ConnectionGroup_Class','')
@@ -526,6 +528,7 @@ def getcgtypefromboxtype(boxtype):
                     angletype = fields.get('param_angletype','')
                     endHD = fields.get('param_endHD','')
                     balconyHD = fields.get('param_balconyHD')
+                    status=fields.get('Status','')
                     
                     # ----------------------------------------------------------------------
                     
@@ -558,7 +561,8 @@ def getcgtypefromboxtype(boxtype):
                         'AngleType':angletype,
                         'EndHD':endHD,
                         'BalconyHD':balconyHD, 
-                        'EstimatedCost':f"{costpermeter} €"                                                                
+                        'EstimatedCost':f"{costpermeter} €", 
+                        'Status':status                                                               
                     })
                                         
                 # Obtener el offset para la siguiente página, si no hay más, el valor será None y salimos del bucle
@@ -1096,9 +1100,9 @@ def airtable_conection(api_key,base_id):
     connection=Airtable(api_key,base_id)    
     return connection
 
-jointsplayground_connect = airtable_conection(adri_jointsplayground_api_key,joints_base_id)
+jointsplayground_connect = airtable_conection(adri_jointsplayground_api_key,joints2_base_id)
 # materials_connect = airtable_conection(adri_materiales_api_key,materiales_base_id)
-joints3playground_connect=airtable_conection(adri_joints3playground_api_key,materiallayers_base_id)
+joints3playground_connect=airtable_conection(adri_joints3playground_api_key,joints3_base_id)
 
 def jointsplayground_connectiongroup():    
     resultados_cgtype = joints3playground_connect.list(cgtype_table,view='AM', fields=['cgtype_id','Description','api_ConnectionGroup_Class','RL_ConnectionGroupType_ConnectionType_api'])

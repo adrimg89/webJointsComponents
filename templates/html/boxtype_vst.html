@@ -33,7 +33,10 @@
             <th>Angle Cadence
                 <select class="filter-select" data-column-index="6" id="filter-anglecadence"></select>
             </th> 
-            <th>Estimated €/m</th>          
+            <th>Estimated €/m</th>
+            <th>Status
+                <select class="filter-select" data-column-index="8" id="filter-status"></select>
+            </th>          
         </tr>
         <!-- Aquí van tus registros en bucle -->
         {% for record in vst %}
@@ -46,6 +49,7 @@
             <td>{{ record.AngleType }}</td>
             <td>{{ record.AngleCadence }}</td>            
             <td>{{ record.EstimatedCost }}</td>
+            <td>{{ record.Status }}</td>
         </tr>
         {% endfor %}
     </table>

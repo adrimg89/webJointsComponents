@@ -72,11 +72,10 @@ $(document).ready(function () {
     function actualizarDesplegables() {
         llenarDesplegable(0, "#filter-cgt");
         llenarDesplegable(1, "#filter-cgclass");
-        // llenarDesplegable(2, "#filter-desc");            
-        llenarDesplegable(3, "#filter-anglecadence");
-        llenarDesplegable(4, "#filter-endHD");
-        llenarDesplegable(5, "#filter-balconyHD");
-        llenarDesplegable(7, "#filter-status");
+        llenarDesplegable(2, "#filter-desc");
+        llenarDesplegable(3, "#filter-screwlong");
+        llenarDesplegable(4, "#filter-screwcadence");        
+        llenarDesplegable(6, "#filter-status");
     }
 
     // Llenar los desplegables al cargar la página inicialmente

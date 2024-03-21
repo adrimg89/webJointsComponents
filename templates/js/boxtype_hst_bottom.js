@@ -77,6 +77,7 @@ $(document).ready(function () {
         llenarDesplegable(4, "#filter-anglecadence");
         llenarDesplegable(5, "#filter-endHD");
         llenarDesplegable(6, "#filter-balconyHD");
+        llenarDesplegable(8, "#filter-status");
     }
 
     // Llenar los desplegables al cargar la página inicialmente

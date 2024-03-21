@@ -6,7 +6,7 @@
     <title>ConnectionGroup Type para joints V.ST</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/boxtype_vst.css') }}"> <!-- Ruta relativa al archivo style.css -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="{{ url_for('static', filename='js/boxtype_vst.js') }}"></script> <!-- Ruta relativa al archivo main.js -->
+    <script src="{{ url_for('static', filename='js/boxtype_hst_top.js') }}"></script> <!-- Ruta relativa al archivo main.js -->
 </head>
 <body>
     <h1>ConnectionGroup Type para joints H.ST_TOP</h1>
@@ -27,7 +27,10 @@
             <th>Screw Cadence
                 <select class="filter-select" data-column-index="4" id="filter-screwcadence"></select>
             </th> 
-            <th>Estimated €/m</th>                       
+            <th>Estimated €/m</th> 
+            <th>Status
+                <select class="filter-select" data-column-index="6" id="filter-status"></select>
+            </th>                      
         </tr>
         <!-- Aquí van tus registros en bucle -->
         {% for record in top %}
@@ -38,6 +41,7 @@
             <td>{{ record.ScrewLong }}</td>
             <td>{{ record.ScrewCadence }}</td>
             <td>{{ record.EstimatedCost }}</td>
+            <td>{{ record.Status }}</td>
         </tr>
         {% endfor %}
     </table>

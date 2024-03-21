@@ -31,7 +31,10 @@
             <th>Balcony Hold Down
                 <select class="filter-select" data-column-index="6" id="filter-balconyHD"></select>
             </th> 
-            <th>Estimated €/m</th>                  
+            <th>Estimated €/m</th>  
+            <th>Status
+                <select class="filter-select" data-column-index="8" id="filter-status"></select>
+            </th>                
         </tr>
         <!-- Aquí van tus registros en bucle -->
         {% for record in bottom %}
@@ -44,6 +47,7 @@
             <td>{{ record.EndHD }}</td>
             <td>{{ record.BalconyHD }}</td>
             <td>{{ record.EstimatedCost }}</td>
+            <td>{{ record.Status }}</td>
         </tr>
         {% endfor %}
     </table>
